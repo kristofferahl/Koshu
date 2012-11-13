@@ -1,7 +1,11 @@
 param($installPath, $toolsPath, $package)
 
+if ($toolsPath -eq $null) {
+	$toolsPath = $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "")
+}
+
 $koshuModule = Join-Path $toolsPath koshu.psm1
-import-module $koshuModule -verbose
+Import-Module $koshuModule -DisableNameChecking
 
 @"
 =======================================================
