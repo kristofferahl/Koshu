@@ -1,0 +1,1 @@
+powershell -NoProfile -ExecutionPolicy Bypass -Command "& { &'init.ps1'; if ('$@'.length -gt 2) { Invoke-Command -Command {&'Koshu-$1' $2 $3 $4 $5 $6}; } elseif ('%*'.length -gt 2) { Invoke-Command -Command {&'Koshu-%1' %2 %3 %4 %5 %6}; } else { Write-Host "Please specify a command..."; Get-ChildItem function:Koshu-*; Start-Sleep -s 5; } }"
