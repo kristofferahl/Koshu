@@ -3,19 +3,25 @@
 #------------------------------------------------------------
 
 $script:koshu		= @{}
-$koshu.version		= '1.0.0'
+$koshu.version		= '0.1.0'
 $koshu.verbose		= $false
 
 $psakeVersion		= '4.2.0.1'
 $psakeDir			= '.\Source\Packages'
+$koshuDir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "") -replace ".$"
+
 
 #------------------------------------------------------------
-# Functions
+# Tasks
 #------------------------------------------------------------
 
-function Invoke-Koshu($buildFile, $target, $psakeParameters) {
+function Koshu-Build($buildFile, $target, $psakeParameters=@{}) {
 	Write-Host "Koshu - version " $koshu.version
 	Write-Host "Copyright (c) 2012 Kristoffer Ahl"
+	
+	if ("$buildFile".EndsWith(".ps1") -eq $false) {
+		$buildFile = "$buildFile.ps1"
+	}
 	
 	try {
 		nuget install psake -Version $psakeVersion -OutputDirectory $psakeDir
@@ -41,10 +47,40 @@ function Invoke-Koshu($buildFile, $target, $psakeParameters) {
 	}
 }
 
-function Scaffold-Koshu($template, $projectName, $rootDir='.\..') {
+function Koshu-Scaffold($template, $projectName, $rootDir='.\') {
 	Write-Host "Scaffolding Koshu template" $template "for" $projectName
-	Write-Host "Putting Koshu files in" (Resolve-Path $rootDir)
+	
+	$template = $template.ToLower()
+	$projectName = $projectName.ToLower()
+	$templateName		= "$projectName-$template"
+	
+	if ("$rootDir".EndsWith("\") -eq $true) {
+		$rootDir = $rootDir -replace ".$"
+	}
+	$toolsDirRel		= $koshuDir -replace [regex]::Escape($rootDir), "."
+	
+	$koshuFile = "$rootDir\koshu.cmd"
+	if (!(test-path $koshuFile)) {
+		(cat "$koshuDir\koshu.cmd") -replace "init.ps1","$toolsDirRel\init.ps1" -replace "TARGET","Release" | out-file $koshuFile -encoding "Default" -force
+		Write-Host "Created koshu trigger $koshuFile"
+	}
+	
+	$templateFile = "$rootDir\$templateName.ps1"
+	if (!(test-path $templateFile)) {
+		(cat "$koshuDir\Templates\$template.ps1") | out-file $templateFile -encoding "Default" -force
+		Write-Host "Created build template $templateFile"
+	}
+	
+	$triggerFile = "$rootDir\$templateName-local.cmd"
+	if (!(test-path $triggerFile)) {
+		(cat "$koshuDir\Templates\$template-trigger.cmd") -replace "buildFile.ps1","$templateName.ps1" -replace "TARGET","Local" | out-file $triggerFile -encoding "Default" -force
+		Write-Host "Created build trigger $triggerFile"
+	}
 }
+
+#------------------------------------------------------------
+# Functions
+#------------------------------------------------------------
 
 function create_directory($directoryName) {
 	if (!(test-path $directoryName -pathtype container)) {
@@ -134,26 +170,26 @@ function pack_solution($solutionName, $destination, $packageName) {
 }
 
 function exec_retry([scriptblock]$command, [string]$commandName, [int]$retries = 3) {
-    $currentRetry = 0
-    $success = $false
-	
-    do {
-        try {
-            & $command;
-            $success = $true
-            Write-Host "Successfully executed [$commandName] command. Number of retries: $currentRetry."
-        } catch [System.Exception] {
-            Write-Host "Exception occurred while trying to execute [$commandName] command:" + $_.Exception.ToString() -fore Yellow
-            if ($currentRetry -gt $retries) {
-                throw "Can not execute [$commandName] command. The error: " + $_.Exception.ToString()
-            } else {
-               Write-Host "Sleeping before $currentRetry retry of [$commandName] command"
-               Start-Sleep -s 1
-            }
-            $currentRetry = $currentRetry + 1
-        }
-    }
-    while (!$success)
+	$currentRetry = 0
+	$success = $false
+
+	do {
+		try {
+			& $command;
+			$success = $true
+			Write-Host "Successfully executed [$commandName] command. Number of retries: $currentRetry."
+		} catch [System.Exception] {
+			Write-Host "Exception occurred while trying to execute [$commandName] command:" + $_.Exception.ToString() -fore Yellow
+			if ($currentRetry -gt $retries) {
+				throw "Can not execute [$commandName] command. The error: " + $_.Exception.ToString()
+			} else {
+			Write-Host "Sleeping before $currentRetry retry of [$commandName] command"
+			Start-Sleep -s 1
+			}
+			$currentRetry = $currentRetry + 1
+		}
+	}
+	while (!$success)
 }
 
 #------------------------------------------------------------
@@ -174,7 +210,7 @@ set-alias ?: invoke_ternary
 # Export
 #------------------------------------------------------------
 
-export-modulemember -function Invoke-Koshu, Scaffold-Koshu
+export-modulemember -function Koshu-Build, Koshu-Scaffold
 export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, build_solution, pack_solution, exec_retry, invoke_ternary
 export-modulemember -alias ?:
 export-modulemember -variable koshu
