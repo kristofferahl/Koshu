@@ -66,7 +66,7 @@ function Koshu-Scaffold($template, $projectName, $rootDir='.\', $buildTarget) {
 	
 	$koshuFile = "$rootDir\koshu.cmd"
 	if (!(test-path $koshuFile)) {
-		(cat "$koshuDir\koshu.cmd") -replace "init.ps1","$toolsDirRel\init.ps1" -replace "TARGET","Release" | out-file $koshuFile -encoding "Default" -force
+		(cat "$koshuDir\Templates\koshu.cmd") -replace "init.ps1","$toolsDirRel\init.ps1" | out-file $koshuFile -encoding "Default" -force
 		Write-Host "Created koshu trigger $koshuFile"
 	}
 	
