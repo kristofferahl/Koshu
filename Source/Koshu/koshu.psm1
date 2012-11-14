@@ -44,25 +44,21 @@ function Koshu-Build($buildFile, $target="Default", $psakeParameters=@{}) {
 	}
 }
 
-function Koshu-Scaffold($template, $projectName, $rootDir='.\', $buildTarget) {
-	Write-Host "Scaffolding Koshu template" $template "for" $projectName
-	
-	$template			= $template.ToLower()
-	$projectName		= $projectName.ToLower()
-	$templateName		= "$projectName-$template"
-	$triggerName		= $templateName
-	
+function Koshu-Scaffold($template, $buildName='', $buildTarget, $projectName, $rootDir='.\') {
+	Assert ($template -ne $null) "No template name specified!"
+
+	Write-Host "Scaffolding Koshu template" $template
+
 	if ("$rootDir".EndsWith("\") -eq $true) {
 		$rootDir = $rootDir -replace ".$"
 	}
 	$toolsDirRel		= $koshuDir -replace [regex]::Escape($rootDir), "."
 	
-	if ($buildTarget -eq $null) {
-		$buildTarget = 'default'
-	} else {
-		$triggerName = "$templateName-$buildTarget".ToLower()
-	}
-	$buildTarget = $buildTarget.ToLower()
+	$template			= $template.ToLower()
+	$buildName			= $buildName.ToLower()
+	$templateName		= ?: {$buildName -ne ''} {"$buildName-$template"} {"$template"} 
+	$triggerName		= (?: {$buildTarget -ne $null} {"$templateName-$buildTarget"} {"$templateName"}).ToString().ToLower()
+	$buildTarget		= (?: {$buildTarget -ne $null} {"$buildTarget"} {"default"}).ToString().ToLower()
 	
 	$koshuFile = "$rootDir\koshu.cmd"
 	if (!(test-path $koshuFile)) {
