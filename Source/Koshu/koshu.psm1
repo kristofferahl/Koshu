@@ -8,7 +8,7 @@ $koshu.verbose		= $false
 
 $psakeVersion		= '4.2.0.1'
 $koshuDir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "") -replace ".$"
-$psakeDir			= Split-Path $koshuDir -parent
+$psakeDir			= ((Resolve-Path $koshuDir) | Split-Path -parent | Split-Path  -parent)
 
 
 #------------------------------------------------------------
@@ -19,7 +19,9 @@ function Koshu-Build($buildFile, $target="Default", $psakeParameters=@{}) {
 	Write-Host "Koshu - version " $koshu.version
 	Write-Host "Copyright (c) 2012 Kristoffer Ahl"
 	
-	if ($buildFile.EndsWith(".ps1") -eq $false) {
+	Assert ($buildFile -ne $null) "No build file specified!"
+	
+	if ("$buildFile".EndsWith(".ps1") -eq $false) {
 		$buildFile = "$buildFile.ps1"
 	}
 	
@@ -42,17 +44,25 @@ function Koshu-Build($buildFile, $target="Default", $psakeParameters=@{}) {
 	}
 }
 
-function Koshu-Scaffold($template, $projectName, $rootDir='.\') {
+function Koshu-Scaffold($template, $projectName, $rootDir='.\', $buildTarget) {
 	Write-Host "Scaffolding Koshu template" $template "for" $projectName
 	
-	$template = $template.ToLower()
-	$projectName = $projectName.ToLower()
+	$template			= $template.ToLower()
+	$projectName		= $projectName.ToLower()
 	$templateName		= "$projectName-$template"
+	$triggerName		= $templateName
 	
 	if ("$rootDir".EndsWith("\") -eq $true) {
 		$rootDir = $rootDir -replace ".$"
 	}
 	$toolsDirRel		= $koshuDir -replace [regex]::Escape($rootDir), "."
+	
+	if ($buildTarget -eq $null) {
+		$buildTarget = 'default'
+	} else {
+		$triggerName = "$templateName-$buildTarget".ToLower()
+	}
+	$buildTarget = $buildTarget.ToLower()
 	
 	$koshuFile = "$rootDir\koshu.cmd"
 	if (!(test-path $koshuFile)) {
@@ -66,9 +76,9 @@ function Koshu-Scaffold($template, $projectName, $rootDir='.\') {
 		Write-Host "Created build template $templateFile"
 	}
 	
-	$triggerFile = "$rootDir\$templateName-local.cmd"
+	$triggerFile = "$rootDir\$triggerName.cmd"
 	if (!(test-path $triggerFile)) {
-		(cat "$koshuDir\Templates\$template-trigger.cmd") -replace "buildFile.ps1","$templateName.ps1" -replace "TARGET","Local" | out-file $triggerFile -encoding "Default" -force
+		(cat "$koshuDir\Templates\$template-trigger.cmd") -replace "buildFile.ps1","$templateName.ps1" -replace "TARGET",$buildTarget | out-file $triggerFile -encoding "Default" -force
 		Write-Host "Created build trigger $triggerFile"
 	}
 }
@@ -130,12 +140,14 @@ function copy_files_flatten($source, $destination, $filter) {
 }
 
 function try_find($path, $maxLevelsUp=3) {
-	$levelsUp = 0
-	do {
-		Write-Host "Path $path not found. Trying one level up."
-		$path = "..\$path"
-		$levelsUp++
-	} while (!(test-path $path) -and $levelsUp -lt $maxLevelsUp)
+	if (!(test-path $path)) {
+		$levelsUp = 0
+		do {
+			Write-Host "Path $path not found. Trying one level up."
+			$path = "..\$path"
+			$levelsUp++
+		} while (!(test-path $path) -and $levelsUp -lt $maxLevelsUp)	
+	}
 	return $path
 }
 
