@@ -7,8 +7,8 @@ $koshu.version		= '0.1.0'
 $koshu.verbose		= $false
 
 $psakeVersion		= '4.2.0.1'
-$psakeDir			= '.\Source\Packages'
 $koshuDir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "") -replace ".$"
+$psakeDir			= Split-Path $koshuDir -parent
 
 
 #------------------------------------------------------------
@@ -26,15 +26,7 @@ function Koshu-Build($buildFile, $target="Default", $psakeParameters=@{}) {
 	$buildFile = try_find $buildFile
 	Assert (test-path $buildFile) "Build file not found: $buildFile"
 	
-	try {
-		nuget install psake -Version $psakeVersion -OutputDirectory $psakeDir
-	} catch [System.Management.Automation.CommandNotFoundException] {
-		throw 'Nuget.exe is not in your path! Add it to your environment variables.'
-	}
-	
 	Write-Host "Invoking psake with properties" ($psakeParameters | Out-String) "."
-	
-	Import-Module "$psakeDir\psake.$psakeVersion\tools\psake.psm1";
 	Invoke-Psake $buildFile $target -properties $psakeParameters;
 
 	if ($psake.build_success -eq $false) {
@@ -182,6 +174,18 @@ function pack_solution($solutionName, $destination, $packageName) {
 	}
 }
 
+function nuget_install($package, $version, $target='.\') {
+	try {
+		if ($version -ne $null) {
+			nuget install $package -Version $version -OutputDirectory $target
+		} else {
+			nuget install $package -OutputDirectory $target
+		}
+	} catch [System.Management.Automation.CommandNotFoundException] {
+		throw 'Nuget.exe is not in your path! Add it to your environment variables.'
+	}
+}
+
 function exec_retry([scriptblock]$command, [string]$commandName, [int]$retries = 3) {
 	$currentRetry = 0
 	$success = $false
@@ -219,11 +223,22 @@ filter invoke_ternary([scriptblock]$decider, [scriptblock]$iftrue, [scriptblock]
 
 set-alias ?: invoke_ternary
 
+
+#------------------------------------------------------------
+# Setup
+#------------------------------------------------------------
+
+nuget_install psake $psakeVersion $psakeDir
+Import-Module "$psakeDir\psake.$psakeVersion\tools\psake.psm1";
+
+
 #------------------------------------------------------------
 # Export
 #------------------------------------------------------------
 
 export-modulemember -function Koshu-Build, Koshu-Scaffold
-export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, try_find, build_solution, pack_solution, exec_retry, invoke_ternary
+export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, try_find
+export-modulemember -function build_solution, pack_solution, nuget_install, exec_retry
+export-modulemember -function invoke_ternary
 export-modulemember -alias ?:
 export-modulemember -variable koshu
