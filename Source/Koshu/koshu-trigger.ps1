@@ -21,4 +21,4 @@ if ($buildNumber -ne $null -and $buildNumber -ne '') {
 }
 
 Import-Module "$(Split-Path -parent $MyInvocation.MyCommand.Definition)\koshu.psm1"
-Koshu-Build $buildFile $target $psakeParameters
+Koshu-Build -buildFile $buildFile -target $target -psakeParameters $psakeParameters
