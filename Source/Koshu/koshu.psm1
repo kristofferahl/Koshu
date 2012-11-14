@@ -15,11 +15,11 @@ $psakeDir			= ((Resolve-Path $koshuDir) | Split-Path -parent | Split-Path  -pare
 # Tasks
 #------------------------------------------------------------
 
-function Koshu-Build($buildFile, $target="Default", $psakeParameters=@{}) {
+function Koshu-Build($buildFile=$(Read-Host "Build file: "), $target="Default", $psakeParameters=@{}) {
 	Write-Host "Koshu - version " $koshu.version
 	Write-Host "Copyright (c) 2012 Kristoffer Ahl"
 	
-	Assert ($buildFile -ne $null) "No build file specified!"
+	Assert ($buildFile -ne $null -and $buildFile -ne "") "No build file specified!"
 	
 	if ("$buildFile".EndsWith(".ps1") -eq $false) {
 		$buildFile = "$buildFile.ps1"
@@ -44,8 +44,8 @@ function Koshu-Build($buildFile, $target="Default", $psakeParameters=@{}) {
 	}
 }
 
-function Koshu-Scaffold($template, $buildName='', $buildTarget, $projectName, $rootDir='.\') {
-	Assert ($template -ne $null) "No template name specified!"
+function Koshu-Scaffold($template=$(Read-Host "Template: "), $projectName, $buildName='', $buildTarget, $rootDir='.\') {
+	Assert ($template -ne $null -and $template -ne "") "No template name specified!"
 
 	Write-Host "Scaffolding Koshu template" $template
 
