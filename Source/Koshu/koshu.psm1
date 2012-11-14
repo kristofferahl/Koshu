@@ -15,13 +15,16 @@ $koshuDir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand
 # Tasks
 #------------------------------------------------------------
 
-function Koshu-Build($buildFile, $target, $psakeParameters=@{}) {
+function Koshu-Build($buildFile, $target="Default", $psakeParameters=@{}) {
 	Write-Host "Koshu - version " $koshu.version
 	Write-Host "Copyright (c) 2012 Kristoffer Ahl"
 	
-	if ("$buildFile".EndsWith(".ps1") -eq $false) {
+	if ($buildFile.EndsWith(".ps1") -eq $false) {
 		$buildFile = "$buildFile.ps1"
 	}
+	
+	$buildFile = try_find $buildFile
+	Assert (test-path $buildFile) "Build file not found: $buildFile"
 	
 	try {
 		nuget install psake -Version $psakeVersion -OutputDirectory $psakeDir
@@ -29,7 +32,7 @@ function Koshu-Build($buildFile, $target, $psakeParameters=@{}) {
 		throw 'Nuget.exe is not in your path! Add it to your environment variables.'
 	}
 	
-	Write-Host "Invoking psake with properties" ($psakeParameters | Out-String)
+	Write-Host "Invoking psake with properties" ($psakeParameters | Out-String) "."
 	
 	Import-Module "$psakeDir\psake.$psakeVersion\tools\psake.psm1";
 	Invoke-Psake $buildFile $target -properties $psakeParameters;
@@ -134,6 +137,16 @@ function copy_files_flatten($source, $destination, $filter) {
 	}
 }
 
+function try_find($path, $maxLevelsUp=3) {
+	$levelsUp = 0
+	do {
+		Write-Host "Path $path not found. Trying one level up."
+		$path = "..\$path"
+		$levelsUp++
+	} while (!(test-path $path) -and $levelsUp -lt $maxLevelsUp)
+	return $path
+}
+
 function build_solution($solutionName) {
 	Assert (test-path $solutionName) "$solutionName could not be found"
 	$buildVerbosity = 'quiet'
@@ -211,6 +224,6 @@ set-alias ?: invoke_ternary
 #------------------------------------------------------------
 
 export-modulemember -function Koshu-Build, Koshu-Scaffold
-export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, build_solution, pack_solution, exec_retry, invoke_ternary
+export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, try_find, build_solution, pack_solution, exec_retry, invoke_ternary
 export-modulemember -alias ?:
 export-modulemember -variable koshu
