@@ -162,9 +162,16 @@ function pack_solution($solutionName, $destination, $packageName, $configuration
 	Assert (test-path $solutionName) "$solutionName could not be found"
 	
 	create_directory $destination
-
+	
+	$type = [IO.Path]::GetExtension((Resolve-Path $solutionName))
+	
 	$packageRoot	= (Resolve-Path $destination)
 	$packageDir		= "$packageRoot\$packageName"
+	
+	if ($type -eq ".csproj" -or $type -eq ".vbproj") {
+		$subDir = [IO.Path]::GetFileNameWithoutExtension((Resolve-Path $solutionName))
+		$packageDir	= "$packageDir\$subDir"
+	}
 
 	create_directory $packageDir
 
