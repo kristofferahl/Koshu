@@ -147,7 +147,7 @@ function try_find($path, $maxLevelsUp=3) {
 	return $path
 }
 
-function build_solution($solutionName) {
+function build_solution($solutionName, $configuration='release') {
 	Assert (test-path $solutionName) "$solutionName could not be found"
 	$buildVerbosity = 'quiet'
 	if ($koshu.verbose -eq $true) {
@@ -158,7 +158,7 @@ function build_solution($solutionName) {
 	}
 }
 
-function pack_solution($solutionName, $destination, $packageName) {
+function pack_solution($solutionName, $destination, $packageName, $configuration='release') {
 	Assert (test-path $solutionName) "$solutionName could not be found"
 	
 	create_directory $destination
