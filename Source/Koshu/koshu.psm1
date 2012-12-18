@@ -10,7 +10,6 @@ $psakeVersion		= '4.2.0.1'
 $koshuDir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "") -replace ".$"
 $psakeDir			= ((Resolve-Path $koshuDir) | Split-Path -parent | Split-Path  -parent)
 
-
 #------------------------------------------------------------
 # Tasks
 #------------------------------------------------------------
@@ -104,6 +103,10 @@ set-alias ?: invoke_ternary
 # Setup
 #------------------------------------------------------------
 
+if ($Args.Length -gt 0) {
+    $psakeDir = $Args[0] -as [string]
+	Write-Host "Overriding psakeDir with argument $psakeDir"
+}
 nuget_install psake $psakeVersion $psakeDir
 Import-Module "$psakeDir\psake.$psakeVersion\tools\psake.psm1";
 
