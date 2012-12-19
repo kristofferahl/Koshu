@@ -151,7 +151,7 @@ function build_solution($solutionName, $configuration='release') {
 	Assert (test-path $solutionName) "$solutionName could not be found"
 	$buildVerbosity = 'quiet'
 	if ($koshu.verbose -eq $true) {
-		$buildVerbosity = 'minial'
+		$buildVerbosity = 'minimal'
 	}
 	exec {
 		msbuild $solutionName /target:Rebuild /property:Configuration=$configuration /verbosity:$buildVerbosity
@@ -177,7 +177,7 @@ function pack_solution($solutionName, $destination, $packageName, $configuration
 
 	$buildVerbosity = 'quiet'
 	if ($koshu.verbose -eq $true) {
-		$buildVerbosity = 'minial'
+		$buildVerbosity = 'minimal'
 	}
 
 	exec {
