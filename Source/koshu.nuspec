@@ -16,6 +16,6 @@
 	</metadata>
 	<files>
 		<file src="Koshu\**\*.*" target="tools" />
-		<file src="..\license" target="content\license" />
+		<file src="..\license" target="license" />
 	</files>
 </package>
