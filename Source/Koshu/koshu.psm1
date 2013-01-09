@@ -185,6 +185,7 @@ function pack_solution($solutionName, $destination, $packageName, $configuration
 			/target:Publish `
 			/property:Configuration=$configuration `
 			/property:_PackageTempDir=$packageDir `
+			/property:AutoParameterizationWebConfigConnectionStrings=False `
 			/verbosity:$buildVerbosity
 	}
 }
