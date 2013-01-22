@@ -51,7 +51,6 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $projectName, $buil
 	if ("$rootDir".EndsWith("\") -eq $true) {
 		$rootDir = $rootDir -replace ".$"
 	}
-	$toolsDirRel		= $koshuDir -replace [regex]::Escape($rootDir), "."
 	
 	$template			= $template.ToLower()
 	$buildName			= $buildName.ToLower()
@@ -61,7 +60,13 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $projectName, $buil
 	
 	$koshuFile = "$rootDir\koshu.cmd"
 	if (!(test-path $koshuFile)) {
-		(cat "$koshuDir\Templates\koshu.cmd") -replace "init.ps1","$toolsDirRel\init.ps1" | out-file $koshuFile -encoding "Default" -force
+		$packagesDir = (Resolve-Path "$koshuDir\..\..") -replace [regex]::Escape((Resolve-Path $rootDir)), "."
+		
+		Get-Content "$koshuDir\Templates\koshu.cmd" |
+			% { $_ -replace "#Version#",$koshu.version } |
+				% { $_ -replace "#PackagesPath#",$packagesDir } |
+					Out-File $koshuFile -encoding "Default" -force
+		
 		Write-Host "Created koshu trigger $koshuFile"
 	}
 	
