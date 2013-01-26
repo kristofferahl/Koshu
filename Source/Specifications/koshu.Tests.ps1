@@ -10,8 +10,8 @@ Describe "Koshu-Scaffold" {
 
 		Koshu-Scaffold build -rootDir $TestDrive
 
-		It "creates koshu.cmd" {
-			(test-path "$TestDrive\koshu.cmd").should.be($true)
+		It "creates koshu.ps1" {
+			(test-path "$TestDrive\koshu.ps1").should.be($true)
 		}
 
 		It "creates build.cmd" {
@@ -28,8 +28,8 @@ Describe "Koshu-Scaffold" {
 
 		Koshu-Scaffold build -buildName "website" -rootDir $TestDrive $TestDrive
 
-		It "creates koshu.cmd" {
-			(test-path "$TestDrive\koshu.cmd").should.be($true)
+		It "creates koshu.ps1" {
+			(test-path "$TestDrive\koshu.ps1").should.be($true)
 		}
 
 		It "creates website-build.cmd" {
