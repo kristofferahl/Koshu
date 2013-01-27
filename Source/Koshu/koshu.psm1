@@ -58,17 +58,11 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $projectName, $buil
 	$triggerName		= (?: {$buildTarget -ne $null} {"$templateName-$buildTarget"} {"$templateName"}).ToString().ToLower()
 	$buildTarget		= (?: {$buildTarget -ne $null} {"$buildTarget"} {"default"}).ToString().ToLower()
 	
-	$koshuFile = "$rootDir\koshu.ps1"
-	if (!(test-path $koshuFile)) {
-		$packagesDir = (Resolve-Path "$koshuDir\..\..") -replace [regex]::Escape((Resolve-Path $rootDir)), "."
-		
-		Get-Content "$koshuDir\Templates\koshu.ps1" |
-			% { $_ -replace "#Version#",$koshu.version } |
-				% { $_ -replace "#PackagesPath#",$packagesDir } |
-					Out-File $koshuFile -encoding "Default" -force
-		
-		Write-Host "Created koshu trigger $koshuFile"
-	}
+	$koshuFileSource		= "$koshuDir\Templates\koshu.ps1"
+	$koshuFileDestination	= "$rootDir\koshu.ps1"
+	$packagesDir			= (Resolve-Path "$koshuDir\..\..") -replace [regex]::Escape((Resolve-Path $rootDir)), "."
+	
+	scaffold_koshufile $koshuFileSource $koshuFileDestination $koshu.version $packagesDir
 	
 	$templateFile = "$rootDir\$templateName.ps1"
 	if (!(test-path $templateFile)) {
@@ -84,10 +78,11 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $projectName, $buil
 }
 
 #------------------------------------------------------------
-# Functions
+# Includes
 #------------------------------------------------------------
 
 . "$koshuDir\koshu-functions.ps1"
+. "$koshuDir\koshu-helpers.ps1"
 
 #------------------------------------------------------------
 # Filters
