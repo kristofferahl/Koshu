@@ -7,7 +7,11 @@ Param(
 $ErrorActionPreference = 'Stop'
 
 # Restore koshu nuget package
-nuget install Koshu -version #Version# -outputdirectory "#PackagesPath#"
+try {
+	nuget install Koshu -version #Version# -outputdirectory "#PackagesPath#"
+} catch [System.Management.Automation.CommandNotFoundException] {
+	throw 'Nuget.exe is not in your path! Add it to your environment variables.'
+}
 
 # Initialize koshu
 #PackagesPath#\Koshu.#Version#\tools\init.ps1
