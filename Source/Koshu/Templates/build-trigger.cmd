@@ -1,2 +1,3 @@
-CALL koshu.cmd build buildFile.ps1 Target
-PAUSE
+@echo off
+powershell -NoProfile -ExecutionPolicy Bypass .\koshu.ps1 buildFile.ps1 target
+pause
