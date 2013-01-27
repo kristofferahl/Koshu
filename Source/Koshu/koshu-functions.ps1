@@ -106,14 +106,17 @@ function pack_solution($solutionName, $destination, $packageName, $configuration
 }
 
 function nuget_install($package, $version, $target='.\') {
+	$nuget = (Get-ChildItem -Path . -Filter NuGet.exe -Recurse | Select-Object -First 1)
+	if ($nuget) { $nuget = $nuget.FullName } else { $nuget = "NuGet.exe" }
+	
 	try {
 		if ($version -ne $null) {
-			nuget install $package -Version $version -OutputDirectory $target
+			& $nuget install $package -Version $version -OutputDirectory $target
 		} else {
-			nuget install $package -OutputDirectory $target
+			& $nuget install $package -OutputDirectory $target
 		}
 	} catch [System.Management.Automation.CommandNotFoundException] {
-		throw 'Nuget.exe is not in your path! Add it to your environment variables.'
+		throw 'Could not find NuGet.exe and it does not seem to be in your path! Aborting build.'
 	}
 }
 

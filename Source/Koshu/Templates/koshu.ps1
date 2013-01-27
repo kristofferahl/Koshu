@@ -7,10 +7,12 @@ Param(
 $ErrorActionPreference = 'Stop'
 
 # Restore koshu nuget package
+$nuget = (Get-ChildItem -Path . -Filter NuGet.exe -Recurse | Select-Object -First 1)
+if ($nuget) { $nuget = $nuget.FullName } else { $nuget = "NuGet.exe" }
 try {
-	nuget install Koshu -version #Version# -outputdirectory "#PackagesPath#"
+	& $nuget install Koshu -version #Version# -outputdirectory "#PackagesPath#"
 } catch [System.Management.Automation.CommandNotFoundException] {
-	throw 'Nuget.exe is not in your path! Add it to your environment variables.'
+	throw 'Could not find NuGet.exe and it does not seem to be in your path! Aborting build.'
 }
 
 # Initialize koshu
