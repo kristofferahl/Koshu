@@ -8,7 +8,7 @@ properties {
 	$sourceDir		= "$rootDir\Source"
 	$buildDir		= "$rootDir\Build"
 	$artifactsDir	= "$buildDir\Artifacts"
-	$artifactsName	= "$product-$version-$configuration"
+	$artifactsName	= "$product-$version-$configuration" -replace "\.","_"
 	$deploymentDir	= ''
 	
 	$buildNumber	= $null
