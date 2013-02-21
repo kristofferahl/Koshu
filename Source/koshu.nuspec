@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 	<metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
 		<id>Koshu</id>
-		<version>0.3.0</version>
+		<version>0.4.0</version>
 		<authors>Kristoffer Ahl</authors>
 		<owners>Kristoffer Ahl</owners>
 		<projectUrl>https://github.com/kristofferahl/Koshu/</projectUrl>
