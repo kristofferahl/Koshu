@@ -7,7 +7,7 @@ Describe "koshu.ps1" {
 
 	$source			= "$koshuDir\Templates\koshu.ps1"
 	$destination	= "$TestDrive\koshu.ps1"
-	$version		= "0.3.0"
+	$version		= "0.4.0"
 	$packagesDir	= ".\Source\Packages"
 	
 	Context "when nuget.exe is found in subdirectory" {
@@ -29,7 +29,7 @@ Describe "koshu.ps1" {
 		Set-Location $currentDir
         
 		It "restores koshu and psake nuget packages" {
-			(test-path "$TestDrive\Source\Packages\Koshu.0.3.0").should.be($true)
+			(test-path "$TestDrive\Source\Packages\Koshu.$version").should.be($true)
 		}
 		
     }
@@ -81,7 +81,7 @@ Describe "koshu.ps1" {
 		Set-Location $currentDir
         
 		It "restores koshu and psake nuget packages" {
-			(test-path "$TestDrive\Source\Packages\Koshu.0.3.0").should.be($true)
+			(test-path "$TestDrive\Source\Packages\Koshu.$version").should.be($true)
 		}
 		
     }
