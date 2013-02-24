@@ -107,9 +107,10 @@ if ($Args.Length -gt 0) {
     $psakeDir = $Args[0] -as [string]
 	Write-Host "Overriding psakeDir with argument $psakeDir"
 }
+
 nuget_install psake $psakeVersion $psakeDir
-if(-not(Get-Module -name "koshu")) {
-	Import-Module "$psakeDir\psake.$psakeVersion\tools\psake.psm1";
+if(-not(Get-Module -name "psake")) {
+	Import-Module "$psakeDir\psake.$psakeVersion\tools\psake.psm1"
 }
 
 
