@@ -3,7 +3,7 @@
 #------------------------------------------------------------
 
 $script:koshu		= @{}
-$koshu.version		= '0.4.0'
+$koshu.version		= '0.4.1'
 $koshu.verbose		= $false
 
 $psakeVersion		= '4.2.0.1'
