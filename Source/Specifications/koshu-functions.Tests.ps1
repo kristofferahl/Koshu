@@ -1,4 +1,5 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
+. "$here\test-helpers.ps1"
 . "$here\..\Koshu\koshu-functions.ps1"
 
 Describe "create_directory" {
@@ -124,5 +125,258 @@ Describe "delete_files" {
 		}
 
     }
+
+}
+
+Describe "find_down -file" {
+
+	Context "when 3 matching files exists" {
+	
+		$rootDir = (testdir $TestDrive)
+		
+		$dir1 = "$rootDir\subdir\dir1"
+		$dir2 = "$rootDir\subdir\dir2"
+		
+		$file1 = "$rootDir\nuget.exe"
+		$file2 = "$dir1\nuget.exe"
+		$file3 = "$dir2\nuget.exe"
+		
+		function setup() {
+			create_directory $rootDir
+			create_directory $dir1
+			create_directory $dir2
+			
+			set-content $file1 "File1"
+			set-content $file2 "File2"
+			set-content $file3 "File3"
+			
+			$file1.should.exist()
+			$file2.should.exist()
+			$file3.should.exist()
+		}
+		
+		setup
+	
+		It "finds file1 in root directory" {
+			$file = find_down "nuget.exe" $rootDir -file
+			
+			$fileContent = (get-content (resolve-path $file))
+			$expectedContent = (get-content (resolve-path $file1))
+			
+			$fileContent.should.be($expectedContent)
+		}
+		
+		It "finds file2 in dir1 directory" {
+			$file = find_down "nuget.exe" "$rootDir\subdir" -file
+			
+			$fileContent = (get-content (resolve-path $file))
+			$expectedContent = (get-content (resolve-path $file2))
+		
+			$fileContent.should.be($expectedContent)
+		}
+		
+		It "finds file3 in dir2 directory" {
+			$file = find_down "nuget.exe" $dir2 -file
+			
+			$fileContent = (get-content (resolve-path $file))
+			$expectedContent = (get-content (resolve-path $file3))
+		
+			$fileContent.should.be($expectedContent)
+		}
+		
+		It "finds no files" {
+			$file = find_down "abc.txt" $rootDir -file
+		
+			if ($file -ne $null) {
+				throw "File was found"
+			}
+		}
+
+	}
+
+}
+
+Describe "find_down -directory" {
+
+	Context "when 3 matching directories exists" {
+	
+		$rootDir = (testdir $TestDrive)
+		
+		$dir1 = "$rootDir\nuget"
+		$dir2 = "$rootDir\subdir1\nuget"
+		$dir3 = "$rootDir\subdir2\nuget"
+		$dir4 = "$rootDir\subdir3"
+		
+		function setup() {
+			create_directory $rootDir
+			create_directory $dir1
+			create_directory $dir2
+			create_directory $dir3
+			create_directory $dir4
+			
+			$dir1.should.exist()
+			$dir2.should.exist()
+			$dir3.should.exist()
+			$dir4.should.exist()
+		}
+		
+		setup
+	
+		It "finds dir1 in root directory" {
+			$dir = find_down "nuget" $rootDir -directory
+		
+			$dir.should.be((resolve-path $dir1).ToString())
+		}
+		
+		It "finds dir2 in subdir1 directory" {
+			$dir = find_down "nuget" "$rootDir\subdir1" -directory
+		
+			$dir.should.be((resolve-path $dir2).ToString())
+		}
+		
+		It "finds dir3 in subdir2 directory" {
+			$dir = find_down "nuget" "$rootDir\subdir2" -directory
+		
+			$dir.should.be((resolve-path $dir3).ToString())
+		}
+		
+		It "finds no directories" {
+			$dir = find_down "nuget" "$rootDir\subdir3" -directory
+		
+			if ($dir -ne $null) {
+				throw "Directory was found"
+			}
+		}
+
+	}
+
+}
+
+Describe "find_up -file" {
+
+	Context "when 3 files exists" {
+	
+		$rootDir = (testdir $TestDrive)
+		$dir1 = "$rootDir\dir1"
+		$dir2 = "$rootDir\dir1\dir2"
+		
+		$file1 = "$rootDir\file1.txt"
+		$file2 = "$dir1\file2.txt"
+		$file3 = "$dir2\file3.txt"
+		
+		function setup() {
+			create_directory $rootDir
+			create_directory $dir1
+			create_directory $dir2
+			
+			set-content $file1 "File1"
+			set-content $file2 "File2"
+			set-content $file3 "File3"
+			
+			$file1.should.exist()
+			$file2.should.exist()
+			$file3.should.exist()
+		}
+	
+		It "finds file1 in root directory" {
+			setup
+
+			$file = find_up "file1.txt" $dir2 -file
+			
+			$fileContent = (get-content (resolve-path $file))
+			$expectedContent = (get-content (resolve-path $file1))
+			
+			$fileContent.should.be($expectedContent)
+		}
+		
+		It "finds file2 in dir1 directory" {
+			setup
+
+			$file = find_up "file2.txt" $dir2 -file
+			
+			$fileContent = (get-content (resolve-path $file))
+			$expectedContent = (get-content (resolve-path $file2))
+		
+			$fileContent.should.be($expectedContent)
+		}
+		
+		It "finds file3 in dir2 directory" {
+			setup
+		    
+			$file = find_up "file3.txt" $dir2 -file
+			
+			$fileContent = (get-content (resolve-path $file))
+			$expectedContent = (get-content (resolve-path $file3))
+		
+			$fileContent.should.be($expectedContent)
+		}
+		
+		It "finds no files" {
+			setup
+		    
+			$file = find_up "abc.txt" $dir2 -file
+		
+			if ($file -ne $null) {
+				throw "File was found"
+			}
+		}
+
+	}
+
+}
+
+Describe "find_up -directory" {
+
+	Context "when 3 directories exists" {
+	
+		$rootDir = (testdir $TestDrive)
+		
+		$dir1 = "$rootDir\.nuget"
+		$dir2 = "$rootDir\subdir\.nuget"
+		$dir3 = "$rootDir\subdir\dir3\.nuget"
+		$dir4 = "$rootDir\subdir\dir4"
+		
+		function setup() {
+			create_directory $rootDir
+			create_directory $dir1
+			create_directory $dir2
+			create_directory $dir3
+			create_directory $dir4
+			
+			$dir1.should.exist()
+			$dir2.should.exist()
+			$dir3.should.exist()
+			$dir4.should.exist()
+		}
+		
+		setup
+	
+		It "finds dir1 in rootDir when starting in rootDir" {
+			$dir = find_up ".nuget" $rootDir 0 -directory
+		
+			$dir.should.be((resolve-path $dir1).ToString())
+		}
+		
+		It "finds dir2 in parent of dir4 when starting in dir4" {
+			$dir = find_up ".nuget" $dir4 2 -directory
+		
+			$dir.should.be((resolve-path $dir2).ToString())
+		}
+		
+		It "finds dir3 in parent of dir3 when starting in dir3" {
+			$dir = find_up ".nuget" $dir3 1 -directory
+		
+			$dir.should.be((resolve-path $dir3).ToString())
+		}
+		
+		It "finds no directories when starting in dir4" {
+			$dir = find_up "nuget" $dir4 0 -directory
+		
+			if ($dir -ne $null) {
+				throw "Directory was found"
+			}
+		}
+
+	}
 
 }

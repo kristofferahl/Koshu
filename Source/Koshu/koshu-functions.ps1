@@ -50,6 +50,67 @@ function copy_files_flatten($source, $destination, $filter) {
 	}
 }
 
+function find_down($pattern, $path, [switch]$file, [switch]$directory) {
+	if ($file -ne $true -and $directory -ne $true) {
+		throw "You must pass a switch for -file or -directory."
+	}
+	
+	if (test-path $path) {
+		if ($file) { $matcher = {get-childitem -path $path -filter $pattern -recurse -file} }
+		if ($directory) { $matcher = {get-childitem -path $path -filter $pattern -recurse -directory} }
+		
+		$matches = (& $matcher)
+		if ($matches -ne $null -and $matches.length -gt 0) {
+			return $matches[0].FullName
+		}
+		return $null
+	}
+}
+
+function find_up($pattern, $path, $maxLevels=3, [switch]$file, [switch]$directory) {
+	if ($file -ne $true -and $directory -ne $true) {
+		throw "You must pass a switch for -file or -directory."
+	}
+	
+	if (test-path $path) {
+		if ($file) {
+			$type = "File"
+			$matcher = {get-childitem -path $path -filter $pattern -file}
+		}
+		
+		if ($directory) {
+			$type = "Directory"
+			$matcher = {get-childitem -path $path -filter $pattern -directory}
+		}
+	
+		$matches = (& $matcher)
+		
+		if ($matches.length -lt 1) {
+			write-host "$type '$pattern' not found in '$path'. Trying one level up."
+			
+			$levelsUp = 0
+			do {
+				$path = "$path\.."
+				
+				if (test-path $path) {
+					$path = (resolve-path $path)
+					$matches = (& $matcher)
+					
+					if ($matches.length -lt 1) {
+						write-host "$type '$pattern' not found in '$path'. Trying one level up."
+					}
+				}
+				$levelsUp++
+			} while ($matches.length -lt 1 -and $levelsUp -lt $maxLevels)
+		}
+	}
+
+	if ($matches -ne $null -and $matches.length -gt 0) {
+		return $matches[0].FullName
+	}
+	return $null
+}
+
 function try_find($path, $maxLevelsUp=3) {
 	if (!(test-path $path)) {
 		$levelsUp = 0
