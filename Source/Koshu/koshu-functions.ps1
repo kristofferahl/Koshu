@@ -158,6 +158,10 @@ function nuget_exe() {
 	find_and_execute "NuGet.exe" $args
 }
 
+function run([string]$exe) {
+	find_and_execute $exe $args
+}
+
 function find_and_execute([string]$commandName, $arguments) {
 	$command = find_down $commandName (resolve-path .) -file
 	if ($command -ne $null) { $command = $command.FullName } else { $command = $commandName }

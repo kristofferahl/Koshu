@@ -411,3 +411,59 @@ Describe "nuget_exe" {
 	}
 
 }
+
+Describe "run" {
+
+	Context "exe not found" {
+	
+		$rootDir = (testdir $TestDrive)
+		create_directory $rootDir
+	
+		It "throws" {
+			$exceptionOccured = $false
+			
+			try {
+				run blaha.exe
+			} catch {
+				$exceptionOccured = $true
+			}
+			
+			$exceptionOccured.should.be($true)
+		}
+
+	}
+
+	Context "invalid command" {
+	
+		$rootDir = (testdir $TestDrive)
+		create_directory $rootDir
+	
+		It "throws" {
+			$exceptionOccured = $false
+			
+			try {
+				run nuget.exe install psake -Version '4__.0.1' -OutputDirectory $rootDir
+			} catch {
+				$exceptionOccured = $true
+			}
+			
+			$exceptionOccured.should.be($true)
+		}
+
+	}
+
+	Context "nuget install" {
+	
+		$rootDir = (testdir $TestDrive)
+		create_directory $rootDir
+	
+		It "installs psake" {
+			run nuget.exe install psake -Version '4.2.0.1' -OutputDirectory $rootDir
+			
+			$exists = test-path "$rootDir\psake.4.2.0.1"
+			$exists.should.be($true)
+		}
+
+	}
+
+}
