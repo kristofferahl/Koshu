@@ -24,7 +24,7 @@ function Koshu-Build($buildFile=$(Read-Host "Build file: "), $target="Default", 
 		$buildFile = "$buildFile.ps1"
 	}
 	
-	$buildFile = try_find $buildFile
+	$buildFile = find_up $buildFile . -file
 	Assert (test-path $buildFile) "Build file not found: $buildFile"
 	
 	Write-Host "Invoking psake with properties" ($psakeParameters | Out-String) "."
