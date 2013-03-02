@@ -52,6 +52,12 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $productName='Produ
 		$rootDir = $rootDir -replace ".$"
 	}
 	
+	if ($productName -eq 'Product.Name') {
+		try {
+			$productName = [IO.Path]::GetFilenameWithoutExtension((Split-Path -Path $dte.Solution.FullName -Leaf))
+		} catch {}
+	}
+	
 	$template			= $template.ToLower()
 	$buildName			= $buildName.ToLower()
 	$templateName		= ?: {$buildName -ne ''} {"$buildName-$template"} {"$template"} 
