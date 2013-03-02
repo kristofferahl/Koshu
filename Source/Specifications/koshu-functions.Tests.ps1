@@ -224,20 +224,17 @@ Describe "find_down -directory" {
 	
 		It "finds dir1 in root directory" {
 			$dir = find_down "nuget" $rootDir -directory
-		
-			$dir.should.be((resolve-path $dir1).ToString())
+			assert_path_equals $dir $dir1
 		}
 		
 		It "finds dir2 in subdir1 directory" {
 			$dir = find_down "nuget" "$rootDir\subdir1" -directory
-		
-			$dir.should.be((resolve-path $dir2).ToString())
+			assert_path_equals $dir $dir2
 		}
 		
 		It "finds dir3 in subdir2 directory" {
 			$dir = find_down "nuget" "$rootDir\subdir2" -directory
-		
-			$dir.should.be((resolve-path $dir3).ToString())
+			assert_path_equals $dir $dir3
 		}
 		
 		It "finds no directories" {
@@ -353,20 +350,17 @@ Describe "find_up -directory" {
 	
 		It "finds dir1 in rootDir when starting in rootDir" {
 			$dir = find_up ".nuget" $rootDir 0 -directory
-		
-			$dir.should.be((resolve-path $dir1).ToString())
+			assert_path_equals $dir $dir1
 		}
 		
 		It "finds dir2 in parent of dir4 when starting in dir4" {
 			$dir = find_up ".nuget" $dir4 2 -directory
-		
-			$dir.should.be((resolve-path $dir2).ToString())
+			assert_path_equals $dir $dir2
 		}
 		
 		It "finds dir3 in parent of dir3 when starting in dir3" {
 			$dir = find_up ".nuget" $dir3 1 -directory
-		
-			$dir.should.be((resolve-path $dir3).ToString())
+			assert_path_equals $dir $dir3
 		}
 		
 		It "finds no directories when starting in dir4" {

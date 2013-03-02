@@ -56,10 +56,10 @@ function find_down($pattern, $path, [switch]$file, [switch]$directory) {
 	}
 	
 	if (test-path $path) {
-		if ($file) { $matcher = {get-childitem -path $path -filter $pattern -recurse -file} }
-		if ($directory) { $matcher = {get-childitem -path $path -filter $pattern -recurse -directory} }
+		if ($file) { $matcher = { get-childitem -path $path -filter $pattern -recurse | ?{ -not $_.PsIsContainer } } }
+		if ($directory) { $matcher = { get-childitem -path $path -filter $pattern -recurse | ?{ $_.PsIsContainer } } }
 		
-		$matches = (& $matcher)
+		$matches = @((& $matcher))
 		if ($matches -ne $null -and $matches.length -gt 0) {
 			return $matches[0].FullName
 		}
@@ -75,15 +75,15 @@ function find_up($pattern, $path, $maxLevels=3, [switch]$file, [switch]$director
 	if (test-path $path) {
 		if ($file) {
 			$type = "File"
-			$matcher = {get-childitem -path $path -filter $pattern -file}
+			$matcher = {get-childitem -path $path -filter $pattern | ?{ -not $_.PsIsContainer }}
 		}
 		
 		if ($directory) {
 			$type = "Directory"
-			$matcher = {get-childitem -path $path -filter $pattern -directory}
+			$matcher = {get-childitem -path $path -filter $pattern | ?{ $_.PsIsContainer }}
 		}
 	
-		$matches = (& $matcher)
+		$matches = @((& $matcher))
 		
 		if ($matches.length -lt 1) {
 			write-host "$type '$pattern' not found in '$path'. Trying one level up."
@@ -94,7 +94,7 @@ function find_up($pattern, $path, $maxLevels=3, [switch]$file, [switch]$director
 				
 				if (test-path $path) {
 					$path = (resolve-path $path)
-					$matches = (& $matcher)
+					$matches = @((& $matcher))
 					
 					if ($matches.length -lt 1) {
 						write-host "$type '$pattern' not found in '$path'. Trying one level up."
