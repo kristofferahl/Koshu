@@ -166,6 +166,8 @@ function find_and_execute([string]$commandName, $arguments) {
 	$command = find_down $commandName (resolve-path .) -file
 	if ($command -ne $null) { $command = $command.FullName } else { $command = $commandName }
 	
+	if ($command -eq $null)  {return}
+	
 	try {
 		& $command
 	} catch [System.Management.Automation.CommandNotFoundException] {
