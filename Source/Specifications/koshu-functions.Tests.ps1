@@ -380,3 +380,40 @@ Describe "find_up -directory" {
 	}
 
 }
+
+Describe "nuget_exe" {
+
+	Context "invalid command" {
+	
+		$rootDir = (testdir $TestDrive)
+		create_directory $rootDir
+	
+		It "throws" {
+			$exceptionOccured = $false
+			
+			try {
+				nuget_exe install psake -Version '4__.0.1' -OutputDirectory $rootDir
+			} catch {
+				$exceptionOccured = $true
+			}
+			
+			$exceptionOccured.should.be($true)
+		}
+
+	}
+
+	Context "install" {
+	
+		$rootDir = (testdir $TestDrive)
+		create_directory $rootDir
+	
+		It "installs psake" {
+			nuget_exe install psake -Version '4.2.0.1' -OutputDirectory $rootDir
+			
+			$exists = test-path "$rootDir\psake.4.2.0.1"
+			$exists.should.be($true)
+		}
+
+	}
+
+}

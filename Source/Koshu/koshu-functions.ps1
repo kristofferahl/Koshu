@@ -154,20 +154,28 @@ function pack_solution($solutionName, $destination, $packageName, $configuration
 	}
 }
 
-function nuget_install($package, $version, $target='.\') {
-	$nuget = (Get-ChildItem -Path . -Filter NuGet.exe -Recurse | Select-Object -First 1)
-	if ($nuget) { $nuget = $nuget.FullName } else { $nuget = "NuGet.exe" }
+function nuget_exe() {
+	find_and_execute "NuGet.exe" $args
+}
+
+function find_and_execute([string]$commandName, $arguments) {
+	$command = find_down $commandName (resolve-path .) -file
+	if ($command -ne $null) { $command = $command.FullName } else { $command = $commandName }
 	
 	try {
-		if ($version -ne $null) {
-			& $nuget install $package -Version $version -OutputDirectory $target
-		} else {
-			& $nuget install $package -OutputDirectory $target
-		}
+		& $command
 	} catch [System.Management.Automation.CommandNotFoundException] {
-		throw 'Could not find NuGet.exe and it does not seem to be in your path! Aborting build.'
+		throw "Could not find '$commandName' and it does not seem to be in your path!"
+	}
+	
+	$fullCommand = "$command $arguments"
+	$result = (invoke-expression $fullCommand) 2>&1
+	
+	if ($lastExitCode -ne 0) {
+		throw "An error occured when invoking command: '$fullCommand'. $result"
 	}
 }
+
 
 function exec_retry([scriptblock]$command, [string]$commandName, [int]$retries = 3) {
 	$currentRetry = 0

@@ -108,7 +108,7 @@ if ($Args.Length -gt 0) {
 	Write-Host "Overriding psakeDir with argument $psakeDir"
 }
 
-nuget_install psake $psakeVersion $psakeDir
+nuget_exe install psake $psakeVersion $psakeDir
 if(-not(Get-Module -name "psake")) {
 	Import-Module "$psakeDir\psake.$psakeVersion\tools\psake.psm1"
 }
@@ -120,7 +120,8 @@ if(-not(Get-Module -name "psake")) {
 
 export-modulemember -function Koshu-Build, Koshu-Scaffold
 export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, find_down, find_up
-export-modulemember -function build_solution, pack_solution, nuget_install, exec_retry
+export-modulemember -function build_solution, pack_solution
+export-modulemember -function nuget_exe, exec_retry
 export-modulemember -function invoke_ternary
 export-modulemember -alias ?:
 export-modulemember -variable koshu
