@@ -43,7 +43,7 @@ function Koshu-Build($buildFile=$(Read-Host "Build file: "), $target="Default", 
 	}
 }
 
-function Koshu-Scaffold($template=$(Read-Host "Template: "), $projectName, $buildName='', $buildTarget, $rootDir='.\') {
+function Koshu-Scaffold($template=$(Read-Host "Template: "), $projectName='Project.Name', $buildName='', $buildTarget, $rootDir='.\') {
 	Assert ($template -ne $null -and $template -ne "") "No template name specified!"
 
 	Write-Host "Scaffolding Koshu template" $template
@@ -66,13 +66,13 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $projectName, $buil
 	
 	$templateFile = "$rootDir\$templateName.ps1"
 	if (!(test-path $templateFile)) {
-		(cat "$koshuDir\Templates\$template.ps1") | out-file $templateFile -encoding "Default" -force
+		(get-content "$koshuDir\Templates\$template.ps1") -replace "Project.Name", $projectName | out-file $templateFile -encoding "Default" -force
 		Write-Host "Created build template $templateFile"
 	}
 	
 	$triggerFile = "$rootDir\$triggerName.cmd"
 	if (!(test-path $triggerFile)) {
-		(cat "$koshuDir\Templates\$template-trigger.cmd") -replace "buildFile.ps1","$templateName.ps1" -replace "TARGET",$buildTarget | out-file $triggerFile -encoding "Default" -force
+		(get-content "$koshuDir\Templates\$template-trigger.cmd") -replace "buildFile.ps1","$templateName.ps1" -replace "TARGET",$buildTarget | out-file $triggerFile -encoding "Default" -force
 		Write-Host "Created build trigger $triggerFile"
 	}
 }
