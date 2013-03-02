@@ -164,12 +164,12 @@ function run([string]$exe) {
 
 function find_and_execute([string]$commandName, $arguments) {
 	$command = find_down $commandName (resolve-path .) -file
-	if ($command -ne $null) { $command = $command.FullName } else { $command = $commandName }
-	
-	if ($command -eq $null)  {return}
+
+	if ($command -eq $null) { $command = $commandName }
+	if ($command -eq $null)  { return }
 	
 	try {
-		& $command
+		& $command | out-null
 	} catch [System.Management.Automation.CommandNotFoundException] {
 		throw "Could not find '$commandName' and it does not seem to be in your path!"
 	}
@@ -179,6 +179,8 @@ function find_and_execute([string]$commandName, $arguments) {
 	
 	if ($lastExitCode -ne 0) {
 		throw "An error occured when invoking command: '$fullCommand'. $result"
+	} else {
+		write-host $result
 	}
 }
 
