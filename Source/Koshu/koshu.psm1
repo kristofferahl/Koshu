@@ -119,7 +119,7 @@ if(-not(Get-Module -name "psake")) {
 #------------------------------------------------------------
 
 export-modulemember -function Koshu-Build, Koshu-Scaffold
-export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, try_find
+export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, find_down, find_up
 export-modulemember -function build_solution, pack_solution, nuget_install, exec_retry
 export-modulemember -function invoke_ternary
 export-modulemember -alias ?:

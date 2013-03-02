@@ -111,18 +111,6 @@ function find_up($pattern, $path, $maxLevels=3, [switch]$file, [switch]$director
 	return $null
 }
 
-function try_find($path, $maxLevelsUp=3) {
-	if (!(test-path $path)) {
-		$levelsUp = 0
-		do {
-			Write-Host "Path $path not found. Trying one level up."
-			$path = "..\$path"
-			$levelsUp++
-		} while (!(test-path $path) -and $levelsUp -lt $maxLevelsUp)	
-	}
-	return $path
-}
-
 function build_solution($solutionName, $configuration='release') {
 	Assert (test-path $solutionName) "$solutionName could not be found"
 	$buildVerbosity = 'quiet'
