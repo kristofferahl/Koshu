@@ -1,5 +1,5 @@
 properties {
-	$product		= 'Project.Name'
+	$product		= 'Product.Name'
 	$version		= '1.0.0'
 	$configuration	= 'release'
 	$useVerbose		= $false
