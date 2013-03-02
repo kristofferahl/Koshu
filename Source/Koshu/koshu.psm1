@@ -43,7 +43,7 @@ function Koshu-Build($buildFile=$(Read-Host "Build file: "), $target="Default", 
 	}
 }
 
-function Koshu-Scaffold($template=$(Read-Host "Template: "), $projectName='Project.Name', $buildName='', $buildTarget, $rootDir='.\') {
+function Koshu-Scaffold($template=$(Read-Host "Template: "), $productName='Product.Name', $buildName='', $buildTarget, $rootDir='.\') {
 	Assert ($template -ne $null -and $template -ne "") "No template name specified!"
 
 	Write-Host "Scaffolding Koshu template" $template
@@ -66,7 +66,7 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $projectName='Proje
 	
 	$templateFile = "$rootDir\$templateName.ps1"
 	if (!(test-path $templateFile)) {
-		(get-content "$koshuDir\Templates\$template.ps1") -replace "Project.Name", $projectName | out-file $templateFile -encoding "Default" -force
+		(get-content "$koshuDir\Templates\$template.ps1") -replace "Product.Name", $productName | out-file $templateFile -encoding "Default" -force
 		Write-Host "Created build template $templateFile"
 	}
 	
