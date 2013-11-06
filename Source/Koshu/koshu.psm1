@@ -151,7 +151,9 @@ function Koshu-InstallPackage([string]$key, [string]$value) {
 function install_git_package($repository, $destinationDir, $message) {
 	write-host $message
 	$branch = 'master'
-	remove-item "$destinationDir" -recurse -force
+	if (test-path $destinationDir) {
+		remove-item "$destinationDir" -recurse -force
+	}
 	new-item $destinationDir -type directory | out-null
 	invoke-expression "git clone $repository $destinationDir --branch $branch --quiet"
 	remove-item "$destinationDir\.git" -recurse -force
