@@ -2,9 +2,12 @@
 # Variables
 #------------------------------------------------------------
 
+# TODO: Move variables into context object
+# TODO: Set Koshu version and psake version from build script for Koshu
 $script:koshu		= @{}
 $koshu.version		= '0.5.1'
 $koshu.verbose		= $false
+$koshu.context		= new-object system.collections.stack # holds onto the current state of all variables
 
 $psakeVersion		= '4.2.0.1'
 $koshuDir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "") -replace ".$"
@@ -13,6 +16,14 @@ $psakeDir			= ((Resolve-Path $koshuDir) | Split-Path -parent | Split-Path  -pare
 #------------------------------------------------------------
 # Tasks
 #------------------------------------------------------------
+
+function Packages {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1)][hashtable]$packages
+	)
+	$koshu.context.Peek().packages += $packages
+}
 
 function Koshu-Build($buildFile=$(Read-Host "Build file: "), $target="Default", $psakeParameters=@{}) {
 	Write-Host "Koshu - version " $koshu.version
@@ -26,13 +37,25 @@ function Koshu-Build($buildFile=$(Read-Host "Build file: "), $target="Default", 
 	
 	$buildFile = find_up $buildFile . -file
 	Assert (test-path $buildFile) "Build file not found: $buildFile"
-	
-	Write-Host "Invoking psake with properties" ($psakeParameters | Out-String) "."
-	Invoke-Psake $buildFile $target -properties $psakeParameters;
+
+	$koshu.context.push(@{
+		"packages" = @{};
+	})
+
+	Write-Host "Invoking psake with properties:" ($psakeParameters | Out-String)
+	Invoke-Psake $buildFile $target -properties $psakeParameters -initialization {
+		$context = $koshu.context.Peek()
+		if ($context.packages.count -gt 0) {
+			Write-Host "Installing Koshu packages" -fore yellow
+			$context.packages.GetEnumerator() | % {
+				Koshu-InstallPackage $_.key $_.value
+			}
+		}
+	};
 
 	if ($psake.build_success -eq $false) {
 		if ($lastexitcode -ne 0) {
-			Write-Host "Build failed! Exit code: $lastexitcode." -fore RED;
+			Write-Host "Build failed! Exit code: $lastexitcode." -fore red;
 			exit $lastexitcode
 		} else {
 			Write-Host "Build failed!" -fore RED;
@@ -83,6 +106,62 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $productName='Produ
 	}
 }
 
+function Koshu-InstallPackage([string]$key, [string]$value) {
+	# PACKAGE: PSGet installer package (To enable usage of PSGet packages in the builds)
+	# PACKAGE: File system watcher package (Allows for watching a directory and run powershell code when it changes)
+	# PACKAGE: ...
+
+	# TODO: Rename the repository for the package plugin template??? Koshu.PluginTemplate???
+	# TODO: Allow cloning of a single branch
+	# TODO: Pass a set of predefined variables to init.ps1 (buildfile path, root directory path etc.)
+	# TODO: Define where koshu packages should be installed
+
+	$name = $key
+	$destinationDir = "$koshuDir\..\..\$name"
+
+	$isGitPackage = ($value -like "file://*" -or $value -like "https://*" -or $value -like "http://*")
+	if ($isGitPackage) {
+		$repository = $value
+		install_git_package $repository $destinationDir "Installing package $name from git ($repository)" 
+	} else {
+		$version = $value
+		install_nuget_package $name $version $destinationDir "Installing package $name.$version from nuget" 
+	}
+	
+	$initFile = "$destinationDir\tools\init.ps1"
+	$hasManifest = $false
+	if ((test-path "$destinationDir\koshu.manifest") -eq $true) {
+		$hasManifest = $true
+		$manifestPath = get-content "$destinationDir\koshu.manifest"
+		$initFile = "$destinationDir\$manifestPath\init.ps1"
+	}
+	
+	if ((test-path $initFile) -eq $false) {
+		if ($hasManifest -eq $true) {
+			throw "init.ps1 could not be found ($initFile). The path in koshu.manifest is incorrect!"
+		} else {
+			throw "init.ps1 could not be found ($initFile). Create a koshu.manifest file containing the path to the directory where init.ps1 is located."
+		}
+	}
+	
+	write-host "Loading package $name"
+	. $initFile
+}
+
+function install_git_package($repository, $destinationDir, $message) {
+	write-host $message
+	$branch = 'master'
+	remove-item "$destinationDir" -recurse -force
+	new-item $destinationDir -type directory | out-null
+	invoke-expression "git clone $repository $destinationDir --branch $branch --quiet"
+	remove-item "$destinationDir\.git" -recurse -force
+}
+
+function install_nuget_package($repository, $destinationDir, $message) {
+	write-host $message
+	# TODO: Add support for nuget package
+}
+
 #------------------------------------------------------------
 # Includes
 #------------------------------------------------------------
@@ -119,12 +198,11 @@ if(-not(Get-Module -name "psake")) {
 	Import-Module "$psakeDir\psake.$psakeVersion\tools\psake.psm1"
 }
 
-
 #------------------------------------------------------------
 # Export
 #------------------------------------------------------------
 
-export-modulemember -function Koshu-Build, Koshu-Scaffold
+export-modulemember -function Packages, Koshu-Build, Koshu-Scaffold, Koshu-InstallPackage
 export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, find_down, find_up
 export-modulemember -function build_solution, pack_solution
 export-modulemember -function nuget_exe, run, exec_retry
