@@ -24,15 +24,15 @@ Scaffolding a build is as easy as calling Koshu-Scaffold passing a single parame
 
 ### Powershell
 
-	.\koshu <buildFile> <target>
+	.\koshu <buildFile> [<target>]
 	
 ### Command line
 
-	powershell .\koshu <buildFile> <target>
+	powershell .\koshu <buildFile> [<target>]
 	
 ### Bash
 
-	powershell koshu <buildFile> <target>
+	powershell koshu <buildFile> [<target>]
 	
 ## Pack task
 
