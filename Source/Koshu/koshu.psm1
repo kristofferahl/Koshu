@@ -114,6 +114,7 @@ function Koshu-InstallPackage([string]$key, [string]$value) {
 	# TODO: Rename the repository for the package plugin template??? Koshu.PluginTemplate???
 	# TODO: Allow cloning of a single branch
 	# TODO: Allow checkout of a specific commit (acts as a version)
+	# TODO: Allow checkout of a specific tag (acts as a version)
 	# TODO: Pass a set of predefined variables to init.ps1 (buildfile path, root directory path etc.)
 	# TODO: Define where koshu packages should be installed
 
