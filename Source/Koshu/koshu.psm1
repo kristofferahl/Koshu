@@ -152,12 +152,54 @@ function Koshu-InstallPackage([string]$key, [string]$value) {
 
 function install_git_package($repository, $destinationDir, $message) {
 	write-host $message
-	$branch = 'master'
+	# TODO: Add support for the NPM style urls
+	# git://github.com/user/project.git#commit-ish
+	# git+ssh://user@hostname:project.git#commit-ish
+	# git+http://user@hostname/project/blah.git#commit-ish
+	# git+https://user@hostname/project/blah.git#commit-ish
+	
+	$cloneArgs = ''
+	$key = $null
+	$value = $null
+
+	$pattern = '(?i)<(.*):(.*)>'
+	$result = [Regex]::Matches($repository, $pattern)
+	if ($result.success -eq $true) {
+		$key = $result.groups[1].value.tostring().tolower()
+		$value = $result.groups[2].value.tostring()
+		$repository = $repository -replace $result.value, ''
+	}
+
 	if (test-path $destinationDir) {
 		remove-item "$destinationDir" -recurse -force
 	}
 	new-item $destinationDir -type directory | out-null
-	invoke-expression "git clone $repository $destinationDir --branch $branch --quiet"
+
+	# DEBUG
+	#write-host "Key: $key"
+	#write-host "Value: $value"
+
+	if ($key -eq 'branch') {
+		$cloneArgs = "--branch $value"
+		write-host "Cloning branch $value of $repository" -fore cyan
+	} else {
+		write-host "Cloning $repository" -fore cyan
+	}
+
+	invoke-expression "git clone $repository $destinationDir $cloneArgs --quiet"
+
+	if ($key -eq 'sha') {
+		# TODO: Fix support for sha checkout
+		#write-host "Checking out sha $value" -fore cyan
+		#invoke-expression "git checkout $value"
+	}
+
+	if ($key -eq 'tag') {
+		# TODO: Fix support for tag checkout
+		#write-host "Checking out tag $value" -fore cyan
+		#invoke-expression "git checkout $value"
+	}
+
 	remove-item "$destinationDir\.git" -recurse -force
 }
 
