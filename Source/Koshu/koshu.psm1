@@ -150,7 +150,7 @@ function Koshu-InstallPackage([string]$key, [string]$value) {
 		}
 	}
 	
-	write-host "Loading package $name"
+	write-host "  Initializing package $name"
 	. $initFile
 }
 
@@ -176,16 +176,14 @@ function install_git_package($repository, $destinationDir, $message) {
 
 	if ($key -eq 'branch') {
 		$cloneArgs = "--branch $value"
-		write-host "Cloning branch $value of $repository" -fore cyan
-	} else {
-		write-host "Cloning $repository" -fore cyan
+		write-host "  Cloning branch $value of $repository"
 	}
 
 	invoke-expression "git clone $repository $destinationDir $cloneArgs --quiet"
 
 	if ($key -eq 'sha' -or $key -eq 'tag') {
 		set-location $destinationDir
-		write-host "Checking out $key $value" -fore cyan
+		write-host "  Checking out $key $value"
 		invoke-expression "git checkout $value --quiet"
 	}
 
