@@ -20,7 +20,7 @@ $psakeDir			= ((Resolve-Path $koshuDir) | Split-Path -parent | Split-Path  -pare
 function Packages {
 	[CmdletBinding()]
 	param(
-		[Parameter(Position=0,Mandatory=1)][hashtable]$packages
+		[Parameter(Position=0,Mandatory=1,ValueFromPipeline=$True)]$packages
 	)
 	$koshu.context.Peek().packages += $packages
 }
@@ -39,7 +39,7 @@ function Koshu-Build($buildFile=$(Read-Host "Build file: "), $target="Default", 
 	Assert (test-path $buildFile) "Build file not found: $buildFile"
 
 	$koshu.context.push(@{
-		"packages" = @{};
+		"packages" = [ordered]@{};
 	})
 
 	Write-Host "Invoking psake with properties:" ($psakeParameters | Out-String)
@@ -112,16 +112,15 @@ function Koshu-InstallPackage([string]$key, [string]$value) {
 	# PACKAGE: ...
 
 	# TODO: Rename the repository for the package plugin template??? Koshu.PluginTemplate???
-	# TODO: Restore packages in the order they are defined
-	# TODO: Add support for the NPM style urls
-		# git://github.com/user/project.git#commit-ish
-		# git+ssh://user@hostname:project.git#commit-ish
-		# git+http://user@hostname/project/blah.git#commit-ish
-		# git+https://user@hostname/project/blah.git#commit-ish
 	# TODO: Pass a set of predefined variables to init.ps1 (buildfile path, root directory path etc.)
 	# TODO: Define where koshu packages should be installed
 	# TODO: Add support for nuget package
 	# TODO: git reset --hard after checking out sha/tag???
+	# TODO: Verify support for the NPM style urls (ssh dit not work previously but http, https and git dif)
+		# git://github.com/user/project.git#commit-ish
+		# git+ssh://user@hostname:project.git#commit-ish
+		# git+http://user@hostname/project/blah.git#commit-ish
+		# git+https://user@hostname/project/blah.git#commit-ish
 
 	$name = $key
 	$destinationDir = "$koshuDir\..\..\$name"
