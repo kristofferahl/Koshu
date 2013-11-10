@@ -126,7 +126,7 @@ function Koshu-InstallPackage([string]$key, [string]$value) {
 	$name = $key
 	$destinationDir = "$koshuDir\..\..\$name"
 
-	$isGitPackage = ($value -like "file://*" -or $value -like "https://*" -or $value -like "http://*")
+	$isGitPackage = ($value -like "git+*" -or $value -like "git:*")
 	if ($isGitPackage) {
 		$repository = $value
 		install_git_package $repository $destinationDir "Installing package $name from git ($repository)" 
@@ -159,6 +159,8 @@ function install_git_package($repository, $destinationDir, $message) {
 	write-host $message
 
 	$value = $null
+	
+	$repository = $repository -replace 'git\+', ''
 
 	$pattern = '(?i)#(.*)'
 	$result = [Regex]::Matches($repository, $pattern)
