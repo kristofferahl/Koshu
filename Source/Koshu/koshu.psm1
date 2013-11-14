@@ -2,8 +2,6 @@
 # Variables
 #------------------------------------------------------------
 
-# TODO: Move variables into context object
-# TODO: Set Koshu version and psake version from build script for Koshu
 $script:koshu		= @{}
 $koshu.version		= '0.5.1'
 $koshu.verbose		= $false
@@ -128,20 +126,6 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $productName='Produ
 }
 
 function Koshu-InstallPackage([string]$key, [string]$value) {
-	# PACKAGE: PSGet installer package (To enable usage of PSGet packages in the builds)
-	# PACKAGE: File system watcher package (Allows for watching a directory and run powershell code when it changes)
-	# PACKAGE: ...
-
-	# TODO: Rename the repository for the package plugin template??? Koshu.PluginTemplate???
-	# TODO: Define where koshu packages should be installed
-	# TODO: Add support for nuget package
-	# TODO: git reset --hard after checking out sha/tag???
-	# TODO: Verify support for the NPM style urls (ssh dit not work previously but http, https and git dif)
-		# git://github.com/user/project.git#commit-ish
-		# git+ssh://user@hostname:project.git#commit-ish
-		# git+http://user@hostname/project/blah.git#commit-ish
-		# git+https://user@hostname/project/blah.git#commit-ish
-
 	$name = $key
 	$destinationDir = "$koshuDir\..\..\$name"
 
