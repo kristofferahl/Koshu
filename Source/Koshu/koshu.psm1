@@ -25,6 +25,14 @@ function Packages {
 	$koshu.context.Peek().packages += $packages
 }
 
+function Config {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1,ValueFromPipeline=$True)]$config
+	)
+	$koshu.context.Peek().config += $config
+}
+
 function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$tasks=@("default"), [hashtable]$properties=@{}) {
 	Write-Host "Koshu - version " $koshu.version
 	Write-Host "Copyright (c) 2012 Kristoffer Ahl"
@@ -40,11 +48,12 @@ function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$
 
 	$koshu.context.push(@{
 		"packages" = [ordered]@{};
+		"config" = [ordered]@{}
 		"initParameters" = @{
-			"rootDir"=($buildFile | split-path -parent)
-			"buildFile"=$buildFile
-			"tasks"=$tasks
-			"properties"=$properties
+			"rootDir" = ($buildFile | split-path -parent)
+			"buildFile" = $buildFile
+			"tasks" = $tasks
+			"properties" = $properties
 		}
 	})
 
@@ -54,7 +63,11 @@ function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$
 		if ($context.packages.count -gt 0) {
 			Write-Host "Installing Koshu packages" -fore yellow
 			$context.packages.GetEnumerator() | % {
-				Koshu-InstallPackage $_.key $_.value $context.initParameters
+				$packageConfig = $context.config.get_item($_.key)
+				if ($packageConfig -eq $null) {
+					$packageConfig = @{}
+				}
+				Koshu-InstallPackage -key $_.key -value $_.value -initParameters $context.initParameters -config $packageConfig
 			}
 		}
 	};
@@ -112,11 +125,12 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $productName='Produ
 	}
 }
 
-function Koshu-InstallPackage([string]$key, [string]$value, [hashtable]$initParameters) {
+function Koshu-InstallPackage([string]$key, [string]$value, [hashtable]$initParameters, [hashtable]$config) {
 	# PACKAGE: PSGet installer package (To enable usage of PSGet packages in the builds)
 	# PACKAGE: File system watcher package (Allows for watching a directory and run powershell code when it changes)
 	# PACKAGE: ...
 
+	# TODO: Rename Koshu-InstallPackage to Koshu-InitPackage. Kosku-InstallPackage should simply install and nothing else. Koshu-InitPackage should call Koshu-Install and then call init.ps1.
 	# TODO: Rename the repository for the package plugin template??? Koshu.PluginTemplate???
 	# TODO: Define where koshu packages should be installed
 	# TODO: Add support for nuget package
@@ -156,7 +170,7 @@ function Koshu-InstallPackage([string]$key, [string]$value, [hashtable]$initPara
 	}
 	
 	write-host "  Initializing package $name"
-	. $initFile -parameters $initParameters
+	. $initFile -parameters $initParameters -config $config
 }
 
 function install_git_package($repository, $destinationDir, $message) {
@@ -233,7 +247,7 @@ if(-not(Get-Module -name "psake")) {
 # Export
 #------------------------------------------------------------
 
-export-modulemember -function Packages, Koshu-Build, Koshu-Scaffold, Koshu-InstallPackage
+export-modulemember -function Packages, Config, Koshu-Build, Koshu-Scaffold, Koshu-InstallPackage
 export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, find_down, find_up
 export-modulemember -function build_solution, pack_solution
 export-modulemember -function nuget_exe, run, exec_retry
