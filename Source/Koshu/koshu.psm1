@@ -40,6 +40,12 @@ function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$
 
 	$koshu.context.push(@{
 		"packages" = [ordered]@{};
+		"initParameters" = @{
+			"rootDir"=($buildFile | split-path -parent)
+			"buildFile"=$buildFile
+			"tasks"=$tasks
+			"properties"=$properties
+		}
 	})
 
 	Write-Host "Invoking psake with properties:" ($properties | Out-String)
@@ -48,7 +54,7 @@ function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$
 		if ($context.packages.count -gt 0) {
 			Write-Host "Installing Koshu packages" -fore yellow
 			$context.packages.GetEnumerator() | % {
-				Koshu-InstallPackage $_.key $_.value
+				Koshu-InstallPackage $_.key $_.value $context.initParameters
 			}
 		}
 	};
@@ -106,13 +112,12 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $productName='Produ
 	}
 }
 
-function Koshu-InstallPackage([string]$key, [string]$value) {
+function Koshu-InstallPackage([string]$key, [string]$value, [hashtable]$initParameters) {
 	# PACKAGE: PSGet installer package (To enable usage of PSGet packages in the builds)
 	# PACKAGE: File system watcher package (Allows for watching a directory and run powershell code when it changes)
 	# PACKAGE: ...
 
 	# TODO: Rename the repository for the package plugin template??? Koshu.PluginTemplate???
-	# TODO: Pass a set of predefined variables to init.ps1 (buildfile path, root directory path etc.)
 	# TODO: Define where koshu packages should be installed
 	# TODO: Add support for nuget package
 	# TODO: git reset --hard after checking out sha/tag???
@@ -151,7 +156,7 @@ function Koshu-InstallPackage([string]$key, [string]$value) {
 	}
 	
 	write-host "  Initializing package $name"
-	. $initFile
+	. $initFile -parameters $initParameters
 }
 
 function install_git_package($repository, $destinationDir, $message) {
