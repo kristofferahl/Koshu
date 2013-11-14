@@ -22,7 +22,7 @@ function Packages {
 	param(
 		[Parameter(Position=0,Mandatory=1,ValueFromPipeline=$True)]$packages
 	)
-	$koshu.context.Peek().packages += $packages
+	$koshu.context.peek().packages += $packages
 }
 
 function Config {
@@ -30,7 +30,7 @@ function Config {
 	param(
 		[Parameter(Position=0,Mandatory=1,ValueFromPipeline=$True)]$config
 	)
-	$koshu.context.Peek().config += $config
+	$koshu.context.peek().config += $config
 }
 
 function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$tasks=@("default"), [hashtable]$properties=@{}) {
@@ -59,7 +59,7 @@ function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$
 
 	Write-Host "Invoking psake with properties:" ($properties | Out-String)
 	Invoke-Psake $buildFile -taskList $tasks -properties $properties -initialization {
-		$context = $koshu.context.Peek()
+		$context = $koshu.context.peek()
 		if ($context.packages.count -gt 0) {
 			Write-Host "Installing Koshu packages" -fore yellow
 			$context.packages.GetEnumerator() | % {
