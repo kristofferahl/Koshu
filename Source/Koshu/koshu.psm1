@@ -63,11 +63,13 @@ function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$
 		if ($context.packages.count -gt 0) {
 			Write-Host "Installing Koshu packages" -fore yellow
 			$context.packages.GetEnumerator() | % {
+				$context.initParameters.packageDir = (Koshu-InstallPackage -key $_.key -value $_.value)
+
 				$packageConfig = $context.config.get_item($_.key)
 				if ($packageConfig -eq $null) {
 					$packageConfig = @{}
 				}
-				Koshu-InstallPackage -key $_.key -value $_.value -initParameters $context.initParameters -config $packageConfig
+				Koshu-InitPackage -packageDir $context.initParameters.packageDir -initParameters $context.initParameters -config $packageConfig
 			}
 		}
 	};
@@ -125,12 +127,11 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $productName='Produ
 	}
 }
 
-function Koshu-InstallPackage([string]$key, [string]$value, [hashtable]$initParameters, [hashtable]$config) {
+function Koshu-InstallPackage([string]$key, [string]$value) {
 	# PACKAGE: PSGet installer package (To enable usage of PSGet packages in the builds)
 	# PACKAGE: File system watcher package (Allows for watching a directory and run powershell code when it changes)
 	# PACKAGE: ...
 
-	# TODO: Rename Koshu-InstallPackage to Koshu-InitPackage. Kosku-InstallPackage should simply install and nothing else. Koshu-InitPackage should call Koshu-Install and then call init.ps1.
 	# TODO: Rename the repository for the package plugin template??? Koshu.PluginTemplate???
 	# TODO: Define where koshu packages should be installed
 	# TODO: Add support for nuget package
@@ -153,6 +154,13 @@ function Koshu-InstallPackage([string]$key, [string]$value, [hashtable]$initPara
 		install_nuget_package $name $version $destinationDir "Installing package $name.$version from nuget" 
 	}
 	
+	return $destinationDir
+}
+
+function Koshu-InitPackage([string]$packageDir, [hashtable]$initParameters, [hashtable]$config) {
+	$name = ($packageDir | split-path -leaf)
+	$destinationDir = $packageDir
+
 	$initFile = "$destinationDir\tools\init.ps1"
 	$hasManifest = $false
 	if ((test-path "$destinationDir\koshu.manifest") -eq $true) {
@@ -247,7 +255,7 @@ if(-not(Get-Module -name "psake")) {
 # Export
 #------------------------------------------------------------
 
-export-modulemember -function Packages, Config, Koshu-Build, Koshu-Scaffold, Koshu-InstallPackage
+export-modulemember -function Packages, Config, Koshu-Build, Koshu-Scaffold, Koshu-InstallPackage, Koshu-InitPackage
 export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, find_down, find_up
 export-modulemember -function build_solution, pack_solution
 export-modulemember -function nuget_exe, run, exec_retry
