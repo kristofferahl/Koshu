@@ -25,7 +25,7 @@ function Packages {
 	$koshu.context.Peek().packages += $packages
 }
 
-function Koshu-Build($buildFile=$(Read-Host "Build file: "), $target="Default", $psakeParameters=@{}) {
+function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$tasks=@("default"), [hashtable]$properties=@{}) {
 	Write-Host "Koshu - version " $koshu.version
 	Write-Host "Copyright (c) 2012 Kristoffer Ahl"
 	
@@ -42,8 +42,8 @@ function Koshu-Build($buildFile=$(Read-Host "Build file: "), $target="Default", 
 		"packages" = [ordered]@{};
 	})
 
-	Write-Host "Invoking psake with properties:" ($psakeParameters | Out-String)
-	Invoke-Psake $buildFile $target -properties $psakeParameters -initialization {
+	Write-Host "Invoking psake with properties:" ($properties | Out-String)
+	Invoke-Psake $buildFile -taskList $tasks -properties $properties -initialization {
 		$context = $koshu.context.Peek()
 		if ($context.packages.count -gt 0) {
 			Write-Host "Installing Koshu packages" -fore yellow
