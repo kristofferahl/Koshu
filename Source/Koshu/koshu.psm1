@@ -125,13 +125,20 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $productName='Produ
 	}
 }
 
-function Koshu-InstallPackage([string]$key, [string]$value) {
+function Koshu-InstallPackage([string]$key, [string]$value, [string]$destinationDir=$null) {
 	$name = $key
-	$destinationDir = "$koshuDir\..\..\$name"
 
 	$isGitPackage		= ($value -like "git+*" -or $value -like "git:*")
 	$isDirPackage		= ($value -like "dir+*")
 	$isNugetPackage		= ((-not $isGitPackage) -and (-not $isDirPackage))
+
+	if ($destinationDir -eq $null -or $destinationDir -eq '') {
+		if ($isNugetPackage) {
+			$destinationDir = "$koshuDir\..\..\$name.$version"
+		} else {
+			$destinationDir = "$koshuDir\..\..\$name"
+		}
+	}
 
 	if ($isGitPackage) {
 		$repository = $value
@@ -140,7 +147,7 @@ function Koshu-InstallPackage([string]$key, [string]$value) {
 
 	if ($isDirPackage) {
 		$directory = $value
-		install_dir_package $directory $destinationDir "Installing package $name from directory ($directory)" 
+		install_dir_package $name $directory $destinationDir "Installing package $name from directory ($directory)"
 	}
 
 	if ($isNugetPackage) {
@@ -205,15 +212,20 @@ function install_git_package($repository, $destinationDir, $message) {
 	remove-item "$destinationDir\.git" -recurse -force
 }
 
-function install_dir_package($directory, $destinationDir, $message) {
+function install_dir_package($name, $directory, $destinationDir, $message) {
 	write-host $message
 
 	$directory = $directory -replace 'dir\+',''
+	$sourceDirectory = "$directory\$name"
+
+	if (-not (test-path $sourceDirectory)) {
+		throw "No package found at $sourceDirectory!"
+	}
 
 	if (test-path $destinationDir) {
 		remove-item $destinationDir -recurse -force
 	}
-	copy-item -path $directory -destination $destinationDir -recurse
+	copy-item -path $sourceDirectory -destination $destinationDir -recurse
 }
 
 function install_nuget_package($name, $version, $destinationDir, $message) {
