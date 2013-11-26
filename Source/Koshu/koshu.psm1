@@ -61,7 +61,7 @@ function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$
 		if ($context.packages.count -gt 0) {
 			Write-Host "Installing Koshu packages" -fore yellow
 			$context.packages.GetEnumerator() | % {
-				$context.initParameters.packageDir = (Koshu-InstallPackage -key $_.key -value $_.value)
+				$context.initParameters.packageDir = (Koshu-InstallPackage -name $_.key -version $_.value)
 
 				$packageConfig = $context.config.get_item($_.key)
 				if ($packageConfig -eq $null) {
@@ -135,14 +135,12 @@ function Koshu-ScaffoldPlugin($pluginName=$(read-host "Plugin name: "), $templat
 
 	write-host "Scaffolding Koshu plugin ($pluginName)" -fore yellow
 
-	Koshu-InstallPackage $templateName $templateVersion "$destinationDir\$pluginName"
+	Koshu-InstallPackage -name $templateName -version $templateVersion -destinationDir "$destinationDir\$pluginName"
 }
 
-function Koshu-InstallPackage([string]$key, [string]$value, [string]$destinationDir=$null) {
-	$name = $key
-
-	$isGitPackage		= ($value -like "git+*" -or $value -like "git:*")
-	$isDirPackage		= ($value -like "dir+*")
+function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinationDir=$null) {
+	$isGitPackage		= ($version -like "git+*" -or $version -like "git:*")
+	$isDirPackage		= ($version -like "dir+*")
 	$isNugetPackage		= ((-not $isGitPackage) -and (-not $isDirPackage))
 
 	if ($destinationDir -eq $null -or $destinationDir -eq '') {
@@ -154,18 +152,15 @@ function Koshu-InstallPackage([string]$key, [string]$value, [string]$destination
 	}
 
 	if ($isGitPackage) {
-		$repository = $value
-		install_git_package $repository $destinationDir "Installing package $name from git ($repository)" 
+		install_git_package $version $destinationDir "Installing package $name from git ($version)"
 	}
 
 	if ($isDirPackage) {
-		$directory = $value
-		install_dir_package $name $directory $destinationDir "Installing package $name from directory ($directory)"
+		install_dir_package $name $version $destinationDir "Installing package $name from directory ($version)"
 	}
 
 	if ($isNugetPackage) {
-		$version = $value
-		install_nuget_package $name $version $destinationDir "Installing package $name.$version from nuget" 
+		install_nuget_package $name $version $destinationDir "Installing package $name.$version from nuget"
 	}
 
 	return $destinationDir
