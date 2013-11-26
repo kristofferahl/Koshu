@@ -125,6 +125,19 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $productName='Produ
 	}
 }
 
+function Koshu-ScaffoldPlugin($pluginName=$(read-host "Plugin name: "), $templateName=$(read-host "Template name: "), $templateVersion=$(read-host "Template version: "), $destinationDir=$(read-host "Destination (optional): ")) {
+	Assert ($pluginName -ne $null -and $pluginName -ne "") "No plugin name specified!"
+	Assert ($templateName -ne $null -and $templateName -ne "") "No template name specified!"
+	Assert ($templateVersion -ne $null -and $templateVersion -ne "") "No template version specified!"
+	if ($destinationDir -eq $null -or $destinationDir -eq "") {
+		$destinationDir = '.\koshu-plugins'
+	}
+
+	write-host "Scaffolding Koshu plugin ($pluginName)" -fore yellow
+
+	Koshu-InstallPackage $templateName $templateVersion "$destinationDir\$pluginName"
+}
+
 function Koshu-InstallPackage([string]$key, [string]$value, [string]$destinationDir=$null) {
 	$name = $key
 
@@ -272,7 +285,7 @@ if(-not(Get-Module -name "psake")) {
 # Export
 #------------------------------------------------------------
 
-export-modulemember -function Packages, Config, Koshu-Build, Koshu-Scaffold, Koshu-InstallPackage, Koshu-InitPackage
+export-modulemember -function Packages, Config, Koshu-Build, Koshu-Scaffold, Koshu-ScaffoldPlugin, Koshu-InstallPackage, Koshu-InitPackage
 export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, find_down, find_up
 export-modulemember -function build_solution, pack_solution
 export-modulemember -function nuget_exe, run, exec_retry
