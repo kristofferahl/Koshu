@@ -129,15 +129,25 @@ function Koshu-InstallPackage([string]$key, [string]$value) {
 	$name = $key
 	$destinationDir = "$koshuDir\..\..\$name"
 
-	$isGitPackage = ($value -like "git+*" -or $value -like "git:*")
+	$isGitPackage		= ($value -like "git+*" -or $value -like "git:*")
+	$isDirPackage		= ($value -like "dir+*")
+	$isNugetPackage		= ((-not $isGitPackage) -and (-not $isDirPackage))
+
 	if ($isGitPackage) {
 		$repository = $value
 		install_git_package $repository $destinationDir "Installing package $name from git ($repository)" 
-	} else {
+	}
+
+	if ($isDirPackage) {
+		$directory = $value
+		install_dir_package $directory $destinationDir "Installing package $name from directory ($directory)" 
+	}
+
+	if ($isNugetPackage) {
 		$version = $value
 		install_nuget_package $name $version $destinationDir "Installing package $name.$version from nuget" 
 	}
-	
+
 	return $destinationDir
 }
 
@@ -195,7 +205,18 @@ function install_git_package($repository, $destinationDir, $message) {
 	remove-item "$destinationDir\.git" -recurse -force
 }
 
-function install_nuget_package($repository, $destinationDir, $message) {
+function install_dir_package($directory, $destinationDir, $message) {
+	write-host $message
+
+	$directory = $directory -replace 'dir\+',''
+
+	if (test-path $destinationDir) {
+		remove-item $destinationDir -recurse -force
+	}
+	copy-item -path $directory -destination $destinationDir -recurse
+}
+
+function install_nuget_package($name, $version, $destinationDir, $message) {
 	write-host $message
 }
 
