@@ -71,31 +71,36 @@ function find_up($pattern, $path, $maxLevels=3, [switch]$file, [switch]$director
 	if ($file -ne $true -and $directory -ne $true) {
 		throw "You must pass a switch for -file or -directory."
 	}
-	
+
+	$patternDrive = (split-path -qualifier $pattern -erroraction silentlycontinue)
+	$patternIsAbsolutePath = ($patternDrive -ne $null) -and (New-Object System.IO.DriveInfo($patternDrive)).DriveType -ne 'NoRootDirectory'
+
+	if ($patternIsAbsolutePath) { return $null }
+
 	if (test-path $path) {
 		if ($file) {
 			$type = "File"
-			$matcher = {get-childitem -path $path -filter $pattern | ?{ -not $_.PsIsContainer }}
+			$matcher = {get-childitem -path $path -filter $pattern -erroraction silentlycontinue | ?{ -not $_.PsIsContainer }}
 		}
 		
 		if ($directory) {
 			$type = "Directory"
-			$matcher = {get-childitem -path $path -filter $pattern | ?{ $_.PsIsContainer }}
+			$matcher = {get-childitem -path $path -filter $pattern -erroraction silentlycontinue | ?{ $_.PsIsContainer }}
 		}
-	
+
 		$matches = @((& $matcher))
-		
+
 		if ($matches.length -lt 1) {
 			write-host "$type '$pattern' not found in '$path'. Trying one level up."
-			
+
 			$levelsUp = 0
 			do {
 				$path = "$path\.."
-				
+
 				if (test-path $path) {
 					$path = (resolve-path $path)
 					$matches = @((& $matcher))
-					
+
 					if ($matches.length -lt 1) {
 						write-host "$type '$pattern' not found in '$path'. Trying one level up."
 					}

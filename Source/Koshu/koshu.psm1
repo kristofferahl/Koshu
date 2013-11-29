@@ -34,14 +34,17 @@ function Config {
 function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$tasks=@("default"), [hashtable]$properties=@{}) {
 	Write-Host "Koshu - version " $koshu.version
 	Write-Host "Copyright (c) 2012 Kristoffer Ahl"
-	
+
 	Assert ($buildFile -ne $null -and $buildFile -ne "") "No build file specified!"
-	
+
 	if ("$buildFile".EndsWith(".ps1") -eq $false) {
 		$buildFile = "$buildFile.ps1"
 	}
-	
-	$buildFile = find_up $buildFile . -file
+
+	if (-not (test-path $buildFile)) {
+		$buildFile = find_up $buildFile . -file
+	}
+
 	Assert (test-path $buildFile) "Build file not found: $buildFile"
 
 	$koshu.context.push(@{
