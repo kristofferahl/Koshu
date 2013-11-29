@@ -128,10 +128,19 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $productName='Produ
 	}
 }
 
-function Koshu-ScaffoldPlugin($pluginName=$(read-host "Plugin name: "), $templateName=$(read-host "Template name: "), $templateVersion=$(read-host "Template version: "), $destinationDir=$(read-host "Destination (optional): ")) {
+function Koshu-ScaffoldPlugin() {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1)][string]$pluginName=$(read-host "Plugin name: "),
+		[Parameter(Position=1,Mandatory=1)][string]$templateName=$(read-host "Template name: "),
+		[Parameter(Position=2,Mandatory=1)][string]$templateVersion=$(read-host "Template version: "),
+		[Parameter(Position=3,Mandatory=0)][string]$destinationDir=$(read-host "Destination (optional): ")
+	)
+
 	Assert ($pluginName -ne $null -and $pluginName -ne "") "No plugin name specified!"
 	Assert ($templateName -ne $null -and $templateName -ne "") "No template name specified!"
 	Assert ($templateVersion -ne $null -and $templateVersion -ne "") "No template version specified!"
+
 	if ($destinationDir -eq $null -or $destinationDir -eq "") {
 		$destinationDir = '.\koshu-plugins'
 	}
