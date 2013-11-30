@@ -172,6 +172,9 @@ function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinat
 	}
 
 	if ($isNugetPackage) {
+		if ($version -eq $null -or $version -eq '') {
+			$version = '*'
+		}
 		install_nuget_package $name $version $destinationDir "Installing package $name.$version from nuget"
 	}
 
@@ -250,6 +253,11 @@ function install_dir_package($name, $directory, $destinationDir, $message) {
 
 function install_nuget_package($name, $version, $destinationDir, $message) {
 	write-host $message
+	if ($version -ne '*') {
+		find_and_execute "NuGet.exe" "install $name -version $version -outputdirectory $destinationDir"
+	} else {
+		find_and_execute "NuGet.exe" "install $name -prerelease -outputdirectory $destinationDir"
+	}
 }
 
 #------------------------------------------------------------
