@@ -157,7 +157,7 @@ function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinat
 
 	if ($destinationDir -eq $null -or $destinationDir -eq '') {
 		if ($isNugetPackage) {
-			$destinationDir = "$koshuDir\..\..\$name.$version"
+			$destinationDir = "$koshuDir\..\.."
 		} else {
 			$destinationDir = "$koshuDir\..\..\$name"
 		}
