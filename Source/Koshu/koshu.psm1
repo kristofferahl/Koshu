@@ -48,7 +48,7 @@ function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$
 	Assert (test-path $buildFile) "Build file not found: $buildFile"
 
 	$koshu.context.push(@{
-		"packages" = [ordered]@{};
+		"packages" = [ordered]@{}
 		"config" = [ordered]@{}
 		"initParameters" = @{
 			"rootDir" = ($buildFile | split-path -parent)
@@ -64,7 +64,7 @@ function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$
 		if ($context.packages.count -gt 0) {
 			Write-Host "Installing Koshu packages" -fore yellow
 			$context.packages.GetEnumerator() | % {
-				$context.initParameters.packageDir = (Koshu-InstallPackage -name $_.key -version $_.value)
+				$context.initParameters.packageDir = (Koshu-InstallPackage -name $_.key -version $_.value -installParameters $context.initParameters)
 
 				$packageConfig = $context.config.get_item($_.key)
 				if ($packageConfig -eq $null) {
@@ -145,12 +145,17 @@ function Koshu-ScaffoldPlugin() {
 		$destinationDir = '.\koshu-plugins'
 	}
 
+	$installParameters = @{
+		"rootDir" = "$destinationDir\$pluginName"
+		"pluginName" = $pluginName
+	}
+
 	write-host "Scaffolding Koshu plugin ($pluginName)" -fore yellow
 
-	Koshu-InstallPackage -name $templateName -version $templateVersion -destinationDir "$destinationDir\$pluginName"
+	Koshu-InstallPackage -name $templateName -version $templateVersion -destinationDir "$destinationDir\$pluginName" -installParameters $installParameters
 }
 
-function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinationDir=$null) {
+function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinationDir=$null, [hashtable]$installParameters) {
 	$isGitPackage		= ($version -like "git+*" -or $version -like "git:*")
 	$isDirPackage		= ($version -like "dir+*")
 	$isNugetPackage		= ((-not $isGitPackage) -and (-not $isDirPackage))
@@ -178,6 +183,18 @@ function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinat
 		install_nuget_package $name $version $destinationDir "Installing package $name.$version from nuget"
 	}
 
+	$installFile = "$destinationDir\tools\install.ps1"
+	$hasManifest = $false
+	if ((test-path "$destinationDir\koshu.manifest") -eq $true) {
+		$hasManifest = $true
+		$manifestPath = get-content "$destinationDir\koshu.manifest"
+		$installFile = "$destinationDir\$manifestPath\install.ps1"
+	}
+
+	if (test-path $installFile) {
+		. $installFile -parameters $installParameters
+	}
+
 	return $destinationDir
 }
 
@@ -192,7 +209,7 @@ function Koshu-InitPackage([string]$packageDir, [hashtable]$initParameters, [has
 		$manifestPath = get-content "$destinationDir\koshu.manifest"
 		$initFile = "$destinationDir\$manifestPath\init.ps1"
 	}
-	
+
 	if ((test-path $initFile) -eq $false) {
 		if ($hasManifest -eq $true) {
 			throw "init.ps1 could not be found ($initFile). The path in koshu.manifest is incorrect!"
@@ -200,7 +217,7 @@ function Koshu-InitPackage([string]$packageDir, [hashtable]$initParameters, [has
 			throw "init.ps1 could not be found ($initFile). Create a koshu.manifest file containing the path to the directory where init.ps1 is located."
 		}
 	}
-	
+
 	write-host "  Initializing package $name"
 	. $initFile -parameters $initParameters -config $config
 }
