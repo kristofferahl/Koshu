@@ -175,12 +175,12 @@ function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinat
 
 	if ($isGitPackage) {
 		$packageType = 'git'
-		$installationDir = Install-GitPackage $name $version $destinationDir "Installing package $name from git ($version)"
+		$installationDir = Install-GitPackage $name $version $destinationDir
 	}
 
 	if ($isDirPackage) {
 		$packageType = 'dir'
-		$installationDir = Install-DirPackage $name $version $destinationDir "Installing package $name from directory ($version)"
+		$installationDir = Install-DirPackage $name $version $destinationDir
 	}
 
 	if ($isNugetPackage) {
@@ -188,7 +188,7 @@ function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinat
 		if ($version -eq $null -or $version -eq '') {
 			$version = '*'
 		}
-		$installationDir = Install-NugetPackage $name $version $destinationDir "Installing package $name.$version from nuget"
+		$installationDir = Install-NugetPackage $name $version $destinationDir
 	}
 
 	$installFile = "$installationDir\tools\install.ps1"
@@ -237,8 +237,14 @@ function Koshu-InitPackage([string]$packageDir, [hashtable]$initParameters, [has
 	. $initFile -parameters $initParameters -config $config
 }
 
-function Install-GitPackage($name, $repository, $destinationDir, $message) {
-	write-host $message
+function Install-GitPackage {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1)][string]$name,
+		[Parameter(Position=1,Mandatory=1)][string]$repository,
+		[Parameter(Position=2,Mandatory=1)][string]$destinationDir
+	)
+	write-host "Installing package $name from git ($repository)"
 
 	$value = $null
 
@@ -286,14 +292,20 @@ function Install-GitPackage($name, $repository, $destinationDir, $message) {
 	return ([string]$installationDir)
 }
 
-function Install-DirPackage($name, $directory, $destinationDir, $message) {
-	write-host $message
+function Install-DirPackage {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1)][string]$name,
+		[Parameter(Position=1,Mandatory=1)][string]$sourceDir,
+		[Parameter(Position=2,Mandatory=1)][string]$destinationDir
+	)
+	write-host "Installing package $name from directory ($sourceDir)"
 
-	$directory = $directory -replace 'dir\+',''
-	$sourceDirectory = "$directory\$name"
+	$sourceDir = $sourceDir -replace 'dir\+',''
+	$sourceDir = "$sourceDir\$name"
 
-	if (-not (test-path $sourceDirectory)) {
-		throw "No package found at $sourceDirectory!"
+	if (-not (test-path $sourceDir)) {
+		throw "No package found at $sourceDir!"
 	}
 
 	$installationDir = "$destinationDir\$name.dir"
@@ -302,13 +314,19 @@ function Install-DirPackage($name, $directory, $destinationDir, $message) {
 		remove-item $installationDir -recurse -force
 	}
 
-	copy-item -path $sourceDirectory -destination $installationDir -recurse
+	copy-item -path $sourceDir -destination $installationDir -recurse
 
 	return ([string]$installationDir)
 }
 
-function Install-NugetPackage($name, $version, $destinationDir, $message) {
-	write-host $message
+function Install-NugetPackage {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1)][string]$name,
+		[Parameter(Position=1,Mandatory=1)][string]$version,
+		[Parameter(Position=2,Mandatory=1)][string]$destinationDir
+	)
+	write-host "Installing package $name.$version from nuget"
 
 	if ($version -ne '*') {
 		$output = find_and_execute "NuGet.exe" "install $name -version $version -outputdirectory $destinationDir"
