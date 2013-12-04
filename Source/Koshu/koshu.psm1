@@ -48,6 +48,7 @@ function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$
 	Assert (test-path $buildFile) "Build file not found: $buildFile"
 
 	$koshu.context.push(@{
+		"packagesDir" = (resolve-path "$koshuDir\..\..")
 		"packages" = [ordered]@{}
 		"config" = [ordered]@{}
 		"initParameters" = @{
