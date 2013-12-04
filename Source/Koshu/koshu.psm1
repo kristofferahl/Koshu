@@ -213,7 +213,13 @@ function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinat
 	}
 }
 
-function Koshu-InitPackage([string]$packageDir, [hashtable]$initParameters, [hashtable]$config) {
+function Koshu-InitPackage {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1)][string]$packageDir,
+		[Parameter(Position=1,Mandatory=1)][hashtable]$initParameters,
+		[Parameter(Position=2,Mandatory=1)][hashtable]$config
+	)
 	$name = ($packageDir | split-path -leaf)
 	$destinationDir = $packageDir
 
