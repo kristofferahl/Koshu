@@ -65,8 +65,8 @@ function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$
 		if ($context.packages.count -gt 0) {
 			Write-Host "Installing Koshu packages" -fore yellow
 			$context.packages.GetEnumerator() | % {
-				$context.initParameters.packageDir = (Koshu-InstallPackage -name $_.key -version $_.value -installParameters $context.initParameters)
-
+				$install = (Koshu-InstallPackage -name $_.key -version $_.value -destinationDir $context.packagesDir -installParameters $context.initParameters)
+				$context.initParameters.packageDir = $install.directory
 				$packageConfig = $context.config.get_item($_.key)
 				if ($packageConfig -eq $null) {
 					$packageConfig = @{}
@@ -133,14 +133,14 @@ function Koshu-ScaffoldPlugin() {
 	[CmdletBinding()]
 	param(
 		[Parameter(Position=0,Mandatory=1)][string]$pluginName=$(read-host "Plugin name: "),
-		[Parameter(Position=1,Mandatory=1)][string]$templateName=$(read-host "Template name: "),
-		[Parameter(Position=2,Mandatory=1)][string]$templateVersion=$(read-host "Template version: "),
-		[Parameter(Position=3,Mandatory=0)][string]$destinationDir=$(read-host "Destination (optional): ")
+		[Parameter(Position=1,Mandatory=0)][string]$templateName='Koshu.PluginTemplate',
+		[Parameter(Position=2,Mandatory=0)][string]$templateVersion='',
+		[Parameter(Position=3,Mandatory=0)][string]$destinationDir='.\koshu-plugins'
 	)
 
 	Assert ($pluginName -ne $null -and $pluginName -ne "") "No plugin name specified!"
 	Assert ($templateName -ne $null -and $templateName -ne "") "No template name specified!"
-	Assert ($templateVersion -ne $null -and $templateVersion -ne "") "No template version specified!"
+	Assert ($templateVersion -ne $null) "No template version specified!"
 
 	if ($destinationDir -eq $null -or $destinationDir -eq "") {
 		$destinationDir = '.\koshu-plugins'
@@ -153,50 +153,64 @@ function Koshu-ScaffoldPlugin() {
 
 	write-host "Scaffolding Koshu plugin ($pluginName)" -fore yellow
 
-	Koshu-InstallPackage -name $templateName -version $templateVersion -destinationDir "$destinationDir\$pluginName" -installParameters $installParameters
+	$installation = Koshu-InstallPackage -name $templateName -version $templateVersion -destinationDir $destinationDir -installParameters $installParameters
+
+	if ($installation.directory -ne $installParameters.rootDir) {
+		write-host "Renaming $($installation.directory) to $($installParameters.pluginName)."
+		rename-item $installation.directory -newname $($installParameters.pluginName)
+	}
+
+	remove-item "$($installParameters.rootDir)\$name*.nupkg" -force -erroraction silentlycontinue
 }
 
-function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinationDir=$null, [hashtable]$installParameters) {
+function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinationDir, [hashtable]$installParameters) {
+	Assert ($name -ne $null -and $name -ne '') "No name specified."
+	Assert ($version -ne $null) "No version specified."
+	Assert ($destinationDir -ne $null -and $destinationDir -ne '') "No destination directory specified."
+
+	$packageType		= $null
 	$isGitPackage		= ($version -like "git+*" -or $version -like "git:*")
 	$isDirPackage		= ($version -like "dir+*")
 	$isNugetPackage		= ((-not $isGitPackage) -and (-not $isDirPackage))
 
-	if ($destinationDir -eq $null -or $destinationDir -eq '') {
-		if ($isNugetPackage) {
-			$destinationDir = "$koshuDir\..\.."
-		} else {
-			$destinationDir = "$koshuDir\..\..\$name"
-		}
-	}
-
 	if ($isGitPackage) {
-		install_git_package $version $destinationDir "Installing package $name from git ($version)"
+		$packageType = 'git'
+		$installationDir = install_git_package $name $version $destinationDir "Installing package $name from git ($version)"
 	}
 
 	if ($isDirPackage) {
-		install_dir_package $name $version $destinationDir "Installing package $name from directory ($version)"
+		$packageType = 'dir'
+		$installationDir = install_dir_package $name $version $destinationDir "Installing package $name from directory ($version)"
 	}
 
 	if ($isNugetPackage) {
+		$packageType = 'nuget'
 		if ($version -eq $null -or $version -eq '') {
 			$version = '*'
 		}
-		install_nuget_package $name $version $destinationDir "Installing package $name.$version from nuget"
+		$installationDir = install_nuget_package $name $version $destinationDir "Installing package $name.$version from nuget"
 	}
 
-	$installFile = "$destinationDir\tools\install.ps1"
+	$installFile = "$installationDir\tools\install.ps1"
 	$hasManifest = $false
-	if ((test-path "$destinationDir\koshu.manifest") -eq $true) {
+	if ((test-path "$installationDir\koshu.manifest") -eq $true) {
 		$hasManifest = $true
-		$manifestPath = get-content "$destinationDir\koshu.manifest"
-		$installFile = "$destinationDir\$manifestPath\install.ps1"
+		$manifestPath = get-content "$installationDir\koshu.manifest"
+		$installFile = "$installationDir\$manifestPath\install.ps1"
 	}
 
 	if (test-path $installFile) {
 		. $installFile -parameters $installParameters
 	}
 
-	return $destinationDir
+	return @{
+		"packageType"=$packageType
+		"directory"=$installationDir
+		"directoryName"=(split-path $installationDir -leaf)
+		"manifest"=$hasManifest
+		"installFile" = $installFile
+		"installParameters" = $installParameters
+	}
 }
 
 function Koshu-InitPackage([string]$packageDir, [hashtable]$initParameters, [hashtable]$config) {
@@ -223,11 +237,11 @@ function Koshu-InitPackage([string]$packageDir, [hashtable]$initParameters, [has
 	. $initFile -parameters $initParameters -config $config
 }
 
-function install_git_package($repository, $destinationDir, $message) {
+function install_git_package($name, $repository, $destinationDir, $message) {
 	write-host $message
 
 	$value = $null
-	
+
 	$repository = $repository -replace 'git\+', ''
 
 	$pattern = '(?i)#(.*)'
@@ -237,20 +251,39 @@ function install_git_package($repository, $destinationDir, $message) {
 		$repository = $repository -replace $result.value, ''
 	}
 
-	if (test-path $destinationDir) {
-		remove-item "$destinationDir" -recurse -force
-	}
-	new-item $destinationDir -type directory | out-null
+	$installationDir = "$destinationDir\$name.git"
 
-	invoke-expression "git clone $repository $destinationDir --quiet"
+	if (test-path $installationDir) {
+		remove-item $installationDir -recurse -force | out-null
+	}
+	new-item $installationDir -type directory | out-null
+
+	$cloneCommand = "git clone $repository $installationDir --quiet"
+	invoke-expression $cloneCommand
+
+	if ($lastExitCode -ne 0) {
+		remove-item $installationDir -recurse -force -erroraction silentlycontinue | out-null
+		throw "An error occured! '$cloneCommand'."
+	}
 
 	if ($value -ne $null) {
-		set-location $destinationDir
+		set-location $installationDir
 		write-host "  Checking out $value"
-		invoke-expression "git checkout $value --quiet"
+
+		$checkoutCommand = "git checkout $value --quiet"
+		invoke-expression $checkoutCommand
+
+		if ($lastExitCode -ne 0) {
+			remove-item $installationDir -recurse -force -erroraction silentlycontinue | out-null
+			throw "An error occured! '$checkoutCommand'."
+		}
 	}
 
-	remove-item "$destinationDir\.git" -recurse -force
+	if (test-path "$installationDir\.git") {
+		remove-item "$installationDir\.git" -recurse -force | out-null
+	}
+
+	return ([string]$installationDir)
 }
 
 function install_dir_package($name, $directory, $destinationDir, $message) {
@@ -263,19 +296,36 @@ function install_dir_package($name, $directory, $destinationDir, $message) {
 		throw "No package found at $sourceDirectory!"
 	}
 
-	if (test-path $destinationDir) {
-		remove-item $destinationDir -recurse -force
+	$installationDir = "$destinationDir\$name.dir"
+
+	if (test-path $installationDir) {
+		remove-item $installationDir -recurse -force
 	}
-	copy-item -path $sourceDirectory -destination $destinationDir -recurse
+
+	copy-item -path $sourceDirectory -destination $installationDir -recurse
+
+	return ([string]$installationDir)
 }
 
 function install_nuget_package($name, $version, $destinationDir, $message) {
 	write-host $message
+
 	if ($version -ne '*') {
-		find_and_execute "NuGet.exe" "install $name -version $version -outputdirectory $destinationDir"
+		$x = find_and_execute "NuGet.exe" "install $name -version $version -outputdirectory $destinationDir"
+		write-host $x
 	} else {
-		find_and_execute "NuGet.exe" "install $name -prerelease -outputdirectory $destinationDir"
+		$x = find_and_execute "NuGet.exe" "install $name -prerelease -outputdirectory $destinationDir"
+		write-host $x
+		if ($x -match "(.*)$name (?<version>(.*))\'(.*)") {
+			$version = $matches.version
+		} else {
+			throw "Failed to parse the nuget package version!"
+		}
 	}
+
+	$installationDir = "$destinationDir\$name.$version"
+
+	return ([string]$installationDir)
 }
 
 #------------------------------------------------------------
@@ -323,5 +373,6 @@ export-modulemember -function create_directory, delete_directory, delete_files, 
 export-modulemember -function build_solution, pack_solution
 export-modulemember -function nuget_exe, run, exec_retry
 export-modulemember -function invoke_ternary
+export-modulemember -function install_nuget_package, install_git_package, install_dir_package
 export-modulemember -alias ?:
 export-modulemember -variable koshu
