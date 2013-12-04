@@ -175,12 +175,12 @@ function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinat
 
 	if ($isGitPackage) {
 		$packageType = 'git'
-		$installationDir = install_git_package $name $version $destinationDir "Installing package $name from git ($version)"
+		$installationDir = Install-GitPackage $name $version $destinationDir "Installing package $name from git ($version)"
 	}
 
 	if ($isDirPackage) {
 		$packageType = 'dir'
-		$installationDir = install_dir_package $name $version $destinationDir "Installing package $name from directory ($version)"
+		$installationDir = Install-DirPackage $name $version $destinationDir "Installing package $name from directory ($version)"
 	}
 
 	if ($isNugetPackage) {
@@ -188,7 +188,7 @@ function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinat
 		if ($version -eq $null -or $version -eq '') {
 			$version = '*'
 		}
-		$installationDir = install_nuget_package $name $version $destinationDir "Installing package $name.$version from nuget"
+		$installationDir = Install-NugetPackage $name $version $destinationDir "Installing package $name.$version from nuget"
 	}
 
 	$installFile = "$installationDir\tools\install.ps1"
@@ -237,7 +237,7 @@ function Koshu-InitPackage([string]$packageDir, [hashtable]$initParameters, [has
 	. $initFile -parameters $initParameters -config $config
 }
 
-function install_git_package($name, $repository, $destinationDir, $message) {
+function Install-GitPackage($name, $repository, $destinationDir, $message) {
 	write-host $message
 
 	$value = $null
@@ -286,7 +286,7 @@ function install_git_package($name, $repository, $destinationDir, $message) {
 	return ([string]$installationDir)
 }
 
-function install_dir_package($name, $directory, $destinationDir, $message) {
+function Install-DirPackage($name, $directory, $destinationDir, $message) {
 	write-host $message
 
 	$directory = $directory -replace 'dir\+',''
@@ -307,7 +307,7 @@ function install_dir_package($name, $directory, $destinationDir, $message) {
 	return ([string]$installationDir)
 }
 
-function install_nuget_package($name, $version, $destinationDir, $message) {
+function Install-NugetPackage($name, $version, $destinationDir, $message) {
 	write-host $message
 
 	if ($version -ne '*') {
@@ -373,6 +373,6 @@ export-modulemember -function create_directory, delete_directory, delete_files, 
 export-modulemember -function build_solution, pack_solution
 export-modulemember -function nuget_exe, run, exec_retry
 export-modulemember -function invoke_ternary
-export-modulemember -function install_nuget_package, install_git_package, install_dir_package
+export-modulemember -function Install-NugetPackage, Install-GitPackage, Install-DirPackage
 export-modulemember -alias ?:
 export-modulemember -variable koshu
