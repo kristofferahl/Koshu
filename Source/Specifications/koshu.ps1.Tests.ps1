@@ -33,34 +33,6 @@ Describe "koshu.ps1" {
 		}
 		
     }
-
-	Context "when nuget is not in the path" {
-
-		if ($env:Path.Contains("c:\Nuget-Console\;") -eq $true) {
-			Write-Host "Removing nuget from path" -Fore yellow
-			$env:Path = $env:Path.Replace("c:\Nuget-Console\;","")
-		}
-		
-		scaffold_koshufile $source $destination $version $packagesDir
-		Set-Content -Value "properties {}; task default -depends doit; task doit {};" -Path "$TestDrive\build.ps1"
-		
-		$currentDir = Get-Location
-		Set-Location $TestDrive
-		
-		$message = ""
-		try {
-			.$destination build doit
-		} catch  [Exception] {
-			$message = $_.Exception.Message
-		}
-		
-		Set-Location $currentDir
-        
-		It "promts user to add nuget to path" {
-			$message.should.be("Could not find NuGet.exe and it does not seem to be in your path! Aborting build.")
-		}
-		
-    }
 	
 	Context "when nuget is in the path" {
 	
