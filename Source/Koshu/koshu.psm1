@@ -163,7 +163,15 @@ function Koshu-ScaffoldPlugin() {
 	remove-item "$($installParameters.rootDir)\$name*.nupkg" -force -erroraction silentlycontinue
 }
 
-function Koshu-InstallPackage([string]$name, [string]$version, [string]$destinationDir, [hashtable]$installParameters) {
+function Koshu-InstallPackage {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1)][string]$name,
+		[Parameter(Position=1,Mandatory=1)][string]$version,
+		[Parameter(Position=2,Mandatory=1)][string]$destinationDir,
+		[Parameter(Position=3,Mandatory=1)][hashtable]$installParameters
+	)
+
 	Assert ($name -ne $null -and $name -ne '') "No name specified."
 	Assert ($version -ne $null) "No version specified."
 	Assert ($destinationDir -ne $null -and $destinationDir -ne '') "No destination directory specified."
