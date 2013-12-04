@@ -311,15 +311,15 @@ function install_nuget_package($name, $version, $destinationDir, $message) {
 	write-host $message
 
 	if ($version -ne '*') {
-		$x = find_and_execute "NuGet.exe" "install $name -version $version -outputdirectory $destinationDir"
-		write-host $x
+		$output = find_and_execute "NuGet.exe" "install $name -version $version -outputdirectory $destinationDir"
+		write-host $output
 	} else {
-		$x = find_and_execute "NuGet.exe" "install $name -prerelease -outputdirectory $destinationDir"
-		write-host $x
-		if ($x -match "(.*)$name (?<version>(.*))\'(.*)") {
+		$output = find_and_execute "NuGet.exe" "install $name -prerelease -outputdirectory $destinationDir"
+		write-host $output
+		if ($output -match "(.*)$name (?<version>(.*))\'(.*)") {
 			$version = $matches.version
 		} else {
-			throw "Failed to parse the nuget package version!"
+			throw "Failed to parse the nuget package version from the command output!"
 		}
 	}
 
