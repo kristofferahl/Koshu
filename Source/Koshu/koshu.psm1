@@ -31,7 +31,14 @@ function Config {
 	$koshu.context.peek().config += $config
 }
 
-function Koshu-Build([string]$buildFile=$(Read-Host "Build file: "), [string[]]$tasks=@("default"), [hashtable]$properties=@{}) {
+function Koshu-Build {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1)][string]$buildFile,
+		[Parameter(Position=1,Mandatory=0)][string[]]$tasks=@("default"),
+		[Parameter(Position=2,Mandatory=0)][hashtable]$properties=@{}
+	)
+
 	Write-Host "Koshu - version " $koshu.version
 	Write-Host "Copyright (c) 2012 Kristoffer Ahl"
 
