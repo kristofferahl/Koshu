@@ -96,7 +96,16 @@ function Koshu-Build {
 	}
 }
 
-function Koshu-Scaffold($template=$(Read-Host "Template: "), $productName='Product.Name', $buildName='', $buildTarget, $rootDir='.\') {
+function Koshu-Scaffold {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1)][string]$template,
+		[Parameter(Position=1,Mandatory=0)][string]$productName='Product.Name',
+		[Parameter(Position=2,Mandatory=0)][string]$buildName='',
+		[Parameter(Position=3,Mandatory=0)][string]$buildTarget,
+		[Parameter(Position=4,Mandatory=0)][string]$rootDir='.\'
+	)
+
 	Assert ($template -ne $null -and $template -ne "") "No template name specified!"
 
 	Write-Host "Scaffolding Koshu template" $template
@@ -104,31 +113,31 @@ function Koshu-Scaffold($template=$(Read-Host "Template: "), $productName='Produ
 	if ("$rootDir".EndsWith("\") -eq $true) {
 		$rootDir = $rootDir -replace ".$"
 	}
-	
+
 	if ($productName -eq 'Product.Name') {
 		try {
 			$productName = [IO.Path]::GetFilenameWithoutExtension((Split-Path -Path $dte.Solution.FullName -Leaf))
 		} catch {}
 	}
-	
+
 	$template			= $template.ToLower()
 	$buildName			= $buildName.ToLower()
 	$templateName		= ?: {$buildName -ne ''} {"$buildName-$template"} {"$template"} 
-	$triggerName		= (?: {$buildTarget -ne $null} {"$templateName-$buildTarget"} {"$templateName"}).ToString().ToLower()
-	$buildTarget		= (?: {$buildTarget -ne $null} {"$buildTarget"} {"default"}).ToString().ToLower()
-	
+	$triggerName		= (?: {$buildTarget -ne $null -and $buildTarget -ne ''} {"$templateName-$buildTarget"} {"$templateName"}).ToString().ToLower()
+	$buildTarget		= (?: {$buildTarget -ne $null -and $buildTarget -ne ''} {"$buildTarget"} {"default"}).ToString().ToLower()
+
 	$koshuFileSource		= "$koshuDir\Templates\koshu.ps1"
 	$koshuFileDestination	= "$rootDir\koshu.ps1"
 	$packagesDir			= (Resolve-Path "$koshuDir\..\..") -replace [regex]::Escape((Resolve-Path $rootDir)), "."
-	
+
 	scaffold_koshufile $koshuFileSource $koshuFileDestination $koshu.version $packagesDir
-	
+
 	$templateFile = "$rootDir\$templateName.ps1"
 	if (!(test-path $templateFile)) {
 		(get-content "$koshuDir\Templates\$template.ps1") -replace "Product.Name", $productName | out-file $templateFile -encoding "Default" -force
 		Write-Host "Created build template $templateFile"
 	}
-	
+
 	$triggerFile = "$rootDir\$triggerName.cmd"
 	if (!(test-path $triggerFile)) {
 		(get-content "$koshuDir\Templates\$template-trigger.cmd") -replace "buildFile.ps1","$templateName.ps1" -replace "TARGET",$buildTarget | out-file $triggerFile -encoding "Default" -force
