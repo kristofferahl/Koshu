@@ -1,5 +1,5 @@
 properties {
-	$product		= 'Project.Name'
+	$product		= 'Product.Name'
 	$version		= '1.0.0'
 	$configuration	= 'release'
 	$useVerbose		= $false
@@ -8,7 +8,7 @@ properties {
 	$sourceDir		= "$rootDir\Source"
 	$buildDir		= "$rootDir\Build"
 	$artifactsDir	= "$buildDir\Artifacts"
-	$artifactsName	= "$product-$version-$configuration"
+	$artifactsName	= "$product-$version-$configuration" -replace "\.","_"
 	$deploymentDir	= ''
 	
 	$buildNumber	= $null
@@ -28,7 +28,7 @@ task Local {
 	Write-Host "Product:        $product" -fore Yellow
 	Write-Host "Version:        $version" -fore Yellow
 	Write-Host "Build version:  $buildVersion" -fore Yellow
-	invoke-task Pack
+	Invoke-Task Deploy
 }
 task Release {
 	Write-Host "Running release build" -fore Yellow
