@@ -7,7 +7,7 @@ Describe "koshu.ps1" {
 
 	$source			= "$koshuDir\Templates\koshu.ps1"
 	$destination	= "$TestDrive\koshu.ps1"
-	$version		= "0.4.0"
+	$version		= "0.6.0"
 	$packagesDir	= ".\Source\Packages"
 	
 	Context "when nuget.exe is found in subdirectory" {
