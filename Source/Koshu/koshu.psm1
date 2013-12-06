@@ -42,7 +42,7 @@ function Koshu-Build {
 	Write-Host "Koshu - version " $koshu.version
 	Write-Host "Copyright (c) 2012 Kristoffer Ahl"
 
-	Assert ($buildFile -ne $null -and $buildFile -ne "") "No build file specified!"
+	assert ($buildFile -ne $null -and $buildFile -ne "") "No build file specified!"
 
 	if ("$buildFile".EndsWith(".ps1") -eq $false) {
 		$buildFile = "$buildFile.ps1"
@@ -52,7 +52,7 @@ function Koshu-Build {
 		$buildFile = find_up $buildFile . -file
 	}
 
-	Assert (test-path $buildFile) "Build file not found: $buildFile"
+	assert (test-path $buildFile) "Build file not found: $buildFile"
 
 	$koshu.context.push(@{
 		"packagesDir" = (resolve-path "$koshuDir\..\..")
@@ -106,7 +106,7 @@ function Koshu-Scaffold {
 		[Parameter(Position=4,Mandatory=0)][string]$rootDir='.\'
 	)
 
-	Assert ($template -ne $null -and $template -ne "") "No template name specified!"
+	assert ($template -ne $null -and $template -ne "") "No template name specified!"
 
 	Write-Host "Scaffolding Koshu template" $template
 
@@ -154,9 +154,9 @@ function Koshu-ScaffoldPlugin() {
 		[Parameter(Position=3,Mandatory=0)][string]$destinationDir='.\koshu-plugins'
 	)
 
-	Assert ($pluginName -ne $null -and $pluginName -ne "") "No plugin name specified!"
-	Assert ($templateName -ne $null -and $templateName -ne "") "No template name specified!"
-	Assert ($templateVersion -ne $null) "No template version specified!"
+	assert ($pluginName -ne $null -and $pluginName -ne "") "No plugin name specified!"
+	assert ($templateName -ne $null -and $templateName -ne "") "No template name specified!"
+	assert ($templateVersion -ne $null) "No template version specified!"
 
 	if ($destinationDir -eq $null -or $destinationDir -eq "") {
 		$destinationDir = '.\koshu-plugins'
@@ -188,9 +188,10 @@ function Koshu-InstallPackage {
 		[Parameter(Position=3,Mandatory=1)][hashtable]$installParameters
 	)
 
-	Assert ($name -ne $null -and $name -ne '') "No name specified."
-	Assert ($version -ne $null) "No version specified."
-	Assert ($destinationDir -ne $null -and $destinationDir -ne '') "No destination directory specified."
+	assert ($name -ne $null -and $name -ne '') "No name specified."
+	assert ($version -ne $null) "No version specified."
+	assert ($destinationDir -ne $null -and $destinationDir -ne '') "No destination directory specified."
+	assert ($installParameters -ne $null) "No installation parameters specified."
 
 	$packageType		= $null
 	$isGitPackage		= ($version -like "git+*" -or $version -like "git:*")
@@ -244,6 +245,9 @@ function Koshu-InitPackage {
 		[Parameter(Position=1,Mandatory=1)][hashtable]$initParameters,
 		[Parameter(Position=2,Mandatory=1)][hashtable]$config
 	)
+
+	assert ($packageDir -ne $null -and $name -ne '') "No package directory specified."
+
 	$name = ($packageDir | split-path -leaf)
 	$destinationDir = $packageDir
 
