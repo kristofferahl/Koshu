@@ -169,6 +169,11 @@ function Koshu-ScaffoldPlugin() {
 
 	write-host "Scaffolding Koshu plugin ($pluginName)" -fore yellow
 
+	write-host "Installing package to '$($installParameters.rootDir)'"
+	if (test-path $installParameters.rootDir) {
+		throw "The plugin directory '$($installParameters.rootDir)' already exists!"
+	}
+
 	$installation = Koshu-InstallPackage -name $templateName -version $templateVersion -destinationDir $destinationDir -installParameters $installParameters
 
 	if ($installation.directory -ne $installParameters.rootDir) {
