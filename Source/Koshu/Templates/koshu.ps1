@@ -1,7 +1,8 @@
 Param(
-	[Parameter(Position=0,Mandatory=1)] [string]$buildFile,
+	[Parameter(Position=0,Mandatory=0)] [string]$buildFile,
 	[Parameter(Position=1,Mandatory=0)] [string]$target,
-	[Parameter(Position=2,Mandatory=0)] [hashtable]$parameters = @{}
+	[Parameter(Position=2,Mandatory=0)] [hashtable]$parameters = @{},
+	[Parameter(Position=3,Mandatory=0)] [switch]$load
 )
 
 # Ensure errors fail the build
@@ -19,5 +20,7 @@ try {
 # Initialize koshu
 #PackagesPath#\Koshu.#Version#\tools\init.ps1
 
-# Trigger koshu
-Koshu-Build $buildFile $target $parameters
+if (-not $load) {
+	# Trigger koshu
+	Koshu-Build $buildFile $target $parameters
+}
