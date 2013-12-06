@@ -183,7 +183,7 @@ function Koshu-InstallPackage {
 	[CmdletBinding()]
 	param(
 		[Parameter(Position=0,Mandatory=1)][string]$name,
-		[Parameter(Position=1,Mandatory=1)][string]$version,
+		[Parameter(Position=1,Mandatory=0)][string]$version='',
 		[Parameter(Position=2,Mandatory=1)][string]$destinationDir,
 		[Parameter(Position=3,Mandatory=1)][hashtable]$installParameters
 	)
@@ -191,7 +191,6 @@ function Koshu-InstallPackage {
 	assert ($name -ne $null -and $name -ne '') "No name specified."
 	assert ($version -ne $null) "No version specified."
 	assert ($destinationDir -ne $null -and $destinationDir -ne '') "No destination directory specified."
-	assert ($installParameters -ne $null) "No installation parameters specified."
 
 	$packageType		= $null
 	$isGitPackage		= ($version -like "git+*" -or $version -like "git:*")
