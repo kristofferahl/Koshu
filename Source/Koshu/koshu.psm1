@@ -229,6 +229,7 @@ function Koshu-InstallPackage {
 	}
 
 	if (test-path $installFile) {
+		$installParameters.installationDir = $installationDir
 		. $installFile -parameters $installParameters
 	}
 
