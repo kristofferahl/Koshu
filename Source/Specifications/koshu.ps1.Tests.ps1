@@ -13,7 +13,6 @@ Describe "koshu.ps1" {
 	Context "when nuget.exe is found in subdirectory" {
 
 		scaffold_koshufile $source $destination $version $packagesDir
-		Set-Content -Value "properties {}; task default -depends doit; task doit {};" -Path "$TestDrive\build.ps1"
 		
 		$nugetSource = "C:\Nuget-Console\NuGet.exe"
 		$nugetDestinationDir = "$TestDrive\Source\.nuget"
@@ -24,7 +23,7 @@ Describe "koshu.ps1" {
 		$currentDir = Get-Location
 		Set-Location $TestDrive
 		
-		.$destination build doit
+		.$destination -load
 		
 		Set-Location $currentDir
         
@@ -43,12 +42,11 @@ Describe "koshu.ps1" {
 		}
 		
 		scaffold_koshufile $source $destination $version $packagesDir
-		Set-Content -Value "properties {}; task default -depends doit; task doit {};" -Path "$TestDrive\build.ps1"
 		
 		$currentDir = Get-Location
 		Set-Location $TestDrive
 		
-		.$destination build doit
+		.$destination -load
 		
 		Set-Location $currentDir
         
