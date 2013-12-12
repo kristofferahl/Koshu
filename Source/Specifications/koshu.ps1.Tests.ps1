@@ -29,7 +29,7 @@ Describe "koshu.ps1" {
 		Set-Location $currentDir
         
 		It "restores koshu and psake nuget packages" {
-			(test-path "$TestDrive\Source\Packages\Koshu.$version").should.be($true)
+			"$TestDrive\Source\Packages\Koshu.$version" | Should Exist
 		}
 		
     }
@@ -53,7 +53,7 @@ Describe "koshu.ps1" {
 		Set-Location $currentDir
         
 		It "restores koshu and psake nuget packages" {
-			(test-path "$TestDrive\Source\Packages\Koshu.$version").should.be($true)
+			"$TestDrive\Source\Packages\Koshu.$version" | Should Exist
 		}
 		
     }

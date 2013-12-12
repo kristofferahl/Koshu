@@ -11,15 +11,15 @@ Describe "Koshu-Scaffold" {
 		Koshu-Scaffold build -rootDir $TestDrive
 
 		It "creates koshu.ps1" {
-			(test-path "$TestDrive\koshu.ps1").should.be($true)
+			"$TestDrive\koshu.ps1" | Should Exist
 		}
 
 		It "creates build.cmd" {
-			(test-path "$TestDrive\build.cmd").should.be($true)
+			"$TestDrive\build.cmd" | Should Exist
 		}
 
 		It "creates build.ps1" {
-			(test-path "$TestDrive\build.ps1").should.be($true)
+			"$TestDrive\build.ps1" | Should Exist
 		}
 
     }
@@ -29,15 +29,15 @@ Describe "Koshu-Scaffold" {
 		Koshu-Scaffold build -buildName "website" -rootDir $TestDrive $TestDrive
 
 		It "creates koshu.ps1" {
-			(test-path "$TestDrive\koshu.ps1").should.be($true)
+			"$TestDrive\koshu.ps1" | Should Exist
 		}
 
 		It "creates website-build.cmd" {
-			(test-path "$TestDrive\website-build.cmd").should.be($true)
+			"$TestDrive\website-build.cmd" | Should Exist
 		}
 
 		It "creates website-build.ps1" {
-			(test-path "$TestDrive\website-build.ps1").should.be($true)
+			"$TestDrive\website-build.ps1" | Should Exist
 		}
 
     }
