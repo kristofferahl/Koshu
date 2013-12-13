@@ -1,7 +1,7 @@
 $file = ".\.version"
 $nuspecFile = ".\Source\Koshu.nuspec"
 $koshuFile = ".\Source\Koshu\Koshu.psm1"
-'0.6.0'
+$installFile = ".\install.ps1"
 
 $currentVersion = get-content $file
 write-host "Current version: $currentVersion" -fore yellow
@@ -24,6 +24,14 @@ write-host "Updated nuspec ($nuspecFile)" -fore cyan
 $koshu = ((get-content $koshuFile) | % { $_ -replace "'$currentVersion'","'$version'" } | out-string).trimend([Environment]::NewLine)
 new-item -itemtype file -value $koshu -path $koshuFile -force | out-null
 write-host "Updated koshu.psm1 ($koshuFile)" -fore cyan
+# ---------------------------------------------------
+
+# ---------------------------------------------------
+# Update install.ps1 in the root directory
+# ---------------------------------------------------
+$install = ((get-content $installFile) | % { $_ -replace "'$currentVersion'","'$version'" } | out-string).trimend([Environment]::NewLine)
+new-item -itemtype file -value $install -path $installFile -force | out-null
+write-host "Updated install.ps1 ($installFile)" -fore cyan
 # ---------------------------------------------------
 
 write-host "Set new version to: $version" -fore green
