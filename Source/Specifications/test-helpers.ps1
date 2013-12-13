@@ -15,5 +15,5 @@ function assert_path_equals($path1, $path2) {
 	write-host "Path1: $relPath1"
 	write-host "Path2: $relPath2"
 	
-	"$relPath1".should.be("$relPath2")
+	"$relPath1" | Should Be "$relPath2"
 }

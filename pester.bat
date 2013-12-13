@@ -1,9 +1,9 @@
-nuget install Pester -Version 1.1.0 -OutputDirectory "Source\Packages"
+nuget install Pester -Version 2.0.3 -OutputDirectory "Source\Packages"
 
 @echo off
 SET DIR=%~dp0%
 SET ARGS=%*
-SET PESTERDIR="%~dp0%\Source\Packages\Pester.1.1.0\tools"
+SET PESTERDIR="%~dp0%\Source\Packages\Pester.2.0.3\tools"
 if NOT '%1'=='' SET ARGS=%ARGS:"=\"%
 if '%1'=='/?' goto usage
 if '%1'=='-?' goto usage

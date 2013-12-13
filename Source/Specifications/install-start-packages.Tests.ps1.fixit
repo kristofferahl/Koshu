@@ -1,0 +1,161 @@
+.\koshu.ps1 -load
+
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$testDir = "$here\Temp"
+
+Describe "install_nuget_package" {
+	Context "When installing Koshu.PluginTemplate" {
+		remove-item $testDir -recurse -force -erroraction silentlycontinue
+
+		$result = Install-NugetPackage 'Koshu.PluginTemplate' '*' $testDir
+
+		It "installs the package" {
+			$result | Should Exist
+		}
+
+		It "returns the installation dir" {
+			$result.gettype() | Should Be 'string'
+			$result | Should Match "Koshu.PluginTemplate.*"
+		}
+	}
+  
+	Context "When installing Koshu.PluginTemplate.0.1.0" {
+		remove-item $testDir -recurse -force -erroraction silentlycontinue
+
+		$result = Install-NugetPackage 'Koshu.PluginTemplate' '0.1.0' $testDir
+
+		It "installs the package" {
+			$result | Should Exist
+		}
+
+		It "returns the installation dir" {
+			$expeced = (resolve-path "$testDir\Koshu.PluginTemplate.0.1.0").tostring()
+			$result.gettype() | Should Be 'string'
+			$result | Should Be $expeced
+		}
+	}
+
+	Context "When installing the same package twice" {
+		remove-item $testDir -recurse -force -erroraction silentlycontinue
+
+		$result1 = Install-NugetPackage 'Koshu.PluginTemplate' '0.1.0' $testDir
+		$result2 = Install-NugetPackage 'Koshu.PluginTemplate' '0.1.0' $testDir
+
+		It "installs the package" {
+			$result1 | Should Exist
+			$result2 | Should Exist
+		}
+	}
+
+	Context "When installing non existing package" {
+		remove-item $testDir -recurse -force -erroraction silentlycontinue
+
+		It "should throw" {
+			{ Install-NugetPackage 'Koshu.Whatever' '*' $testDir } | Should Throw
+		}
+	}
+}
+
+Describe "Install-GitPackage" {
+	Context "When installing Koshu.PluginTemplate" {
+		remove-item $testDir -recurse -force -erroraction silentlycontinue
+
+		$result = Install-GitPackage 'Koshu.PluginTemplate' 'git+file:///C/Develop/Koshu.PluginTemplate' $testDir
+
+		It "installs the package" {
+			$result | Should Exist
+		}
+
+		It "returns the installation dir" {
+			$result.gettype() | Should Be 'string'
+			$result | Should Be "$testDir\Koshu.PluginTemplate.git"
+		}
+
+		It "removes the .git dir" {
+			"$result\.git" | Should Not Exist
+		}
+	}
+
+	Context "When installing the same package twice" {
+		remove-item $testDir -recurse -force -erroraction silentlycontinue
+		$markerfile = "$testDir\Koshu.PluginTemplate.git\markerfile.txt"
+
+		$result1 = Install-GitPackage 'Koshu.PluginTemplate' 'git+file:///C/Develop/Koshu.PluginTemplate' $testDir
+
+		"Some content" | out-file $markerfile
+		$markerfile | Should Exist
+
+		$result2 = Install-GitPackage 'Koshu.PluginTemplate' 'git+file:///C/Develop/Koshu.PluginTemplate' $testDir
+
+		It "installs the package" {
+			$result1 | Should Exist
+			$result2 | Should Exist
+		}
+		
+		It "should clean existing directory by removing it" {
+			$markerfile | Should Not Exist
+		}
+	}
+
+	Context "When installing non existing package" {
+		remove-item $testDir -recurse -force -erroraction silentlycontinue
+
+		It "should throw" {
+			{ $result = Install-GitPackage 'Koshu.Whatever' 'git+file:///C/Develop/Koshu.Whatever' $testDir } | Should Throw
+		}
+	}
+
+	Context "When installing package with bad path" {
+		remove-item $testDir -recurse -force -erroraction silentlycontinue
+
+		It "should throw" {
+			{ $result = Install-GitPackage 'Koshu.PluginTemplate' 'git+file/C/Develop/Koshu.Whatever' $testDir } | Should Throw
+		}
+	}
+}
+
+Describe "Install-DirPackage" {
+	Context "When installing Koshu.PluginTemplate" {
+		remove-item $testDir -recurse -force -erroraction silentlycontinue
+
+		$result = Install-DirPackage 'Koshu.PluginTemplate' 'dir+C:\Develop' $testDir
+
+		It "installs the package" {
+			$result | Should Exist
+		}
+
+		It "returns the installation dir" {
+			$result.gettype() | Should Be 'string'
+			$result | Should Be "$testDir\Koshu.PluginTemplate.dir"
+		}
+	}
+
+	Context "When installing the same package twice" {
+		remove-item $testDir -recurse -force -erroraction silentlycontinue
+		$markerfile = "$testDir\Koshu.PluginTemplate.dir\markerfile.txt"
+    
+		$result1 = Install-DirPackage 'Koshu.PluginTemplate' 'dir+C:\Develop' $testDir
+    
+		"Some content" | out-file $markerfile
+		$markerfile | Should Exist
+    
+		$result2 = Install-DirPackage 'Koshu.PluginTemplate' 'dir+C:\Develop' $testDir
+    
+		It "installs the package" {
+			$result1 | Should Exist
+			$result2 | Should Exist
+		}
+		
+		It "should clean existing directory by removing it" {
+			$markerfile | Should Not Exist
+		}
+	}
+
+	Context "When installing non existing package" {
+		remove-item $testDir -recurse -force -erroraction silentlycontinue
+    
+		It "should throw" {
+			{ $result = Install-DirPackage 'Koshu.Whatever' 'dir+C:\Develop' $testDir } | Should Throw
+		}
+	}
+}
