@@ -17,8 +17,11 @@ try {
 	throw 'Could not find NuGet.exe and it does not seem to be in your path! Aborting build.'
 }
 
+$initParameters = $parameters.clone()
+if (-not $load) { $initParameters.nologo = $true }
+
 # Initialize koshu
-#PackagesPath#\Koshu.#Version#\tools\init.ps1
+#PackagesPath#\Koshu.#Version#\tools\init.ps1 -parameters $initParameters
 
 if (-not $load) {
 	# Trigger koshu
