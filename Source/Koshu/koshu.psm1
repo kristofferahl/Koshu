@@ -14,22 +14,6 @@ $koshu.psakeVersion	= '4.2.0.1'
 # Tasks
 #------------------------------------------------------------
 
-function Packages {
-	[CmdletBinding()]
-	param(
-		[Parameter(Position=0,Mandatory=1,ValueFromPipeline=$True)]$packages
-	)
-	$koshu.context.peek().packages += $packages
-}
-
-function Config {
-	[CmdletBinding()]
-	param(
-		[Parameter(Position=0,Mandatory=1,ValueFromPipeline=$True)]$config
-	)
-	$koshu.context.peek().config += $config
-}
-
 function Koshu-Build {
 	[CmdletBinding()]
 	param(
@@ -382,6 +366,26 @@ function Install-NugetPackage {
 	$installationDir = "$destinationDir\$name.$version"
 
 	return ([string]$installationDir)
+}
+
+#------------------------------------------------------------
+# Psake extensions
+#------------------------------------------------------------
+
+function Packages {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1,ValueFromPipeline=$True)]$packages
+	)
+	$koshu.context.peek().packages += $packages
+}
+
+function Config {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1,ValueFromPipeline=$True)]$config
+	)
+	$koshu.context.peek().config += $config
 }
 
 #------------------------------------------------------------
