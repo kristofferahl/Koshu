@@ -1,6 +1,6 @@
 # Koshu
 
-The honey flavoured psake build automation tool
+The honey flavoured psake task automation tool
 
 ## Installing Koshu
 
@@ -10,19 +10,21 @@ Open up a command line and enter the following command:
 
 This will create a file called koshu.ps1 in the current directory. This file enables you to invoke tasks as well as do scaffolding of task files and plugins.
 
+**Note nuget must be in your path or located in a subdirectory of the current directory.**
+
 ## Initializing Koshu
 
 In powershell, enter the path to the koshu.ps1 file and invoke it with the switch -load.
 
 	<directoryPath>\koshu.ps1 -load
 
-## Scaffolding a buildscript
+## Scaffolding a taskfile
 
-Scaffolding a build is as easy as calling Koshu-Scaffold passing a single parameter (-template)
+Scaffolding a taskfile is as easy as calling Koshu-Scaffold passing a single parameter (-template)
 
 	Koshu-Scaffold -template <templateName>
 
-## Running a Koshu build
+## Running Koshu
 
 ### Powershell
 
