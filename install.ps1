@@ -1,5 +1,5 @@
 # variables
-$version = '0.6.0'
+$version = '0.6.1'
 $github = "https://raw.github.com/kristofferahl/Koshu"
 $here = get-location
 $koshu = "$here\koshu.ps1"
