@@ -20,7 +20,7 @@ if (-not $parameters.nologo) {
 }
 
 @"
-=======================================================
-Koshu - The honey flavoured psake build automation tool
-=======================================================
+======================================================
+Koshu - The honey flavoured psake task automation tool
+======================================================
 "@ | Write-Host
