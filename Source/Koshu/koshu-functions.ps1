@@ -180,12 +180,10 @@ function find_and_execute([string]$commandName, $arguments) {
 	}
 	
 	$fullCommand = "$command $arguments"
-	$result = (invoke-expression $fullCommand) 2>&1
+	((invoke-expression $fullCommand) 2>&1) | out-string
 	
 	if ($lastExitCode -ne 0) {
-		throw "An error occured when invoking command: '$fullCommand'. $result"
-	} else {
-		write-host $result
+		throw "An error occured when invoking command: '$fullCommand'."
 	}
 }
 

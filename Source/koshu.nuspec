@@ -1,21 +1,21 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-	<metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-		<id>Koshu</id>
-		<version>0.6.0</version>
-		<authors>Kristoffer Ahl</authors>
-		<owners>Kristoffer Ahl</owners>
-		<projectUrl>https://github.com/kristofferahl/Koshu/</projectUrl>
-		<licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
-		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<description>The honey flavoured psake build automation tool</description>
-		<tags>psake build automation templates helpers</tags>
-		<dependencies>
-			<dependency id="Psake" version="4.2.0.1" />
-		</dependencies>
-	</metadata>
-	<files>
-		<file src="Koshu\**\*.*" target="tools" />
-		<file src="..\license" target="license" />
-	</files>
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>Koshu</id>
+    <version>0.6.1</version>
+    <authors>Kristoffer Ahl</authors>
+    <owners>Kristoffer Ahl</owners>
+    <projectUrl>https://github.com/kristofferahl/Koshu/</projectUrl>
+    <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>The honey flavoured psake task automation tool</description>
+    <tags>psake task automation templates plugins</tags>
+    <dependencies>
+      <dependency id="Psake" version="4.2.0.1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Koshu\**\*.*" target="tools" />
+    <file src="..\license" target="license" />
+  </files>
 </package>

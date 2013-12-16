@@ -3,33 +3,16 @@
 #------------------------------------------------------------
 
 $script:koshu		= @{}
-$koshu.version		= '0.6.0'
+$koshu.version		= '0.6.1'
 $koshu.verbose		= $false
 $koshu.context		= new-object system.collections.stack # holds onto the current state of all variables
-
-$psakeVersion		= '4.2.0.1'
-$koshuDir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "") -replace ".$"
-$psakeDir			= ((Resolve-Path $koshuDir) | Split-Path -parent | Split-Path  -parent)
+$koshu.dir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "") -replace ".$"
+$koshu.psakeDir		= ((Resolve-Path $koshu.dir) | Split-Path -parent | Split-Path  -parent)
+$koshu.psakeVersion	= '4.2.0.1'
 
 #------------------------------------------------------------
 # Tasks
 #------------------------------------------------------------
-
-function Packages {
-	[CmdletBinding()]
-	param(
-		[Parameter(Position=0,Mandatory=1,ValueFromPipeline=$True)]$packages
-	)
-	$koshu.context.peek().packages += $packages
-}
-
-function Config {
-	[CmdletBinding()]
-	param(
-		[Parameter(Position=0,Mandatory=1,ValueFromPipeline=$True)]$config
-	)
-	$koshu.context.peek().config += $config
-}
 
 function Koshu-Build {
 	[CmdletBinding()]
@@ -55,7 +38,7 @@ function Koshu-Build {
 	assert (test-path $buildFile) "Build file not found: $buildFile"
 
 	$koshu.context.push(@{
-		"packagesDir" = (resolve-path "$koshuDir\..\..")
+		"packagesDir" = (resolve-path "$($koshu.dir)\..\..")
 		"packages" = [ordered]@{}
 		"config" = [ordered]@{}
 		"initParameters" = @{
@@ -126,21 +109,21 @@ function Koshu-Scaffold {
 	$triggerName		= (?: {$buildTarget -ne $null -and $buildTarget -ne ''} {"$templateName-$buildTarget"} {"$templateName"}).ToString().ToLower()
 	$buildTarget		= (?: {$buildTarget -ne $null -and $buildTarget -ne ''} {"$buildTarget"} {"default"}).ToString().ToLower()
 
-	$koshuFileSource		= "$koshuDir\Templates\koshu.ps1"
+	$koshuFileSource		= "$($koshu.dir)\Templates\koshu.ps1"
 	$koshuFileDestination	= "$rootDir\koshu.ps1"
-	$packagesDir			= (Resolve-Path "$koshuDir\..\..") -replace [regex]::Escape((Resolve-Path $rootDir)), "."
+	$packagesDir			= (Resolve-Path "$($koshu.dir)\..\..") -replace [regex]::Escape((Resolve-Path $rootDir)), "."
 
 	scaffold_koshufile $koshuFileSource $koshuFileDestination $koshu.version $packagesDir
 
 	$templateFile = "$rootDir\$templateName.ps1"
 	if (!(test-path $templateFile)) {
-		(get-content "$koshuDir\Templates\$template.ps1") -replace "Product.Name", $productName | out-file $templateFile -encoding "Default" -force
+		(get-content "$($koshu.dir)\Templates\$template.ps1") -replace "Product.Name", $productName | out-file $templateFile -encoding "Default" -force
 		Write-Host "Created build template $templateFile"
 	}
 
 	$triggerFile = "$rootDir\$triggerName.cmd"
 	if (!(test-path $triggerFile)) {
-		(get-content "$koshuDir\Templates\$template-trigger.cmd") -replace "buildFile.ps1","$templateName.ps1" -replace "TARGET",$buildTarget | out-file $triggerFile -encoding "Default" -force
+		(get-content "$($koshu.dir)\Templates\$template-trigger.cmd") -replace "buildFile.ps1","$templateName.ps1" -replace "TARGET",$buildTarget | out-file $triggerFile -encoding "Default" -force
 		Write-Host "Created build trigger $triggerFile"
 	}
 }
@@ -386,11 +369,31 @@ function Install-NugetPackage {
 }
 
 #------------------------------------------------------------
+# Psake extensions
+#------------------------------------------------------------
+
+function Packages {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1,ValueFromPipeline=$True)]$packages
+	)
+	$koshu.context.peek().packages += $packages
+}
+
+function Config {
+	[CmdletBinding()]
+	param(
+		[Parameter(Position=0,Mandatory=1,ValueFromPipeline=$True)]$config
+	)
+	$koshu.context.peek().config += $config
+}
+
+#------------------------------------------------------------
 # Includes
 #------------------------------------------------------------
 
-. "$koshuDir\koshu-functions.ps1"
-. "$koshuDir\koshu-helpers.ps1"
+. "$($koshu.dir)\koshu-functions.ps1"
+. "$($koshu.dir)\koshu-helpers.ps1"
 
 #------------------------------------------------------------
 # Filters
@@ -412,13 +415,13 @@ set-alias ?: invoke_ternary
 #------------------------------------------------------------
 
 if ($Args.Length -gt 0) {
-    $psakeDir = $Args[0] -as [string]
-	Write-Host "Overriding psakeDir with argument $psakeDir"
+    $koshu.psakeDir = $Args[0] -as [string]
+	Write-Host "Overriding psake directory with argument $($koshu.psakeDir)"
 }
 
-nuget_exe install psake -version $psakeVersion -outputdirectory $psakeDir
+nuget_exe install psake -version $koshu.psakeVersion -outputdirectory $koshu.psakeDir
 if(-not(Get-Module -name "psake")) {
-	Import-Module "$psakeDir\psake.$psakeVersion\tools\psake.psm1"
+	Import-Module "$($koshu.psakeDir)\psake.$($koshu.psakeVersion)\tools\psake.psm1"
 }
 
 #------------------------------------------------------------

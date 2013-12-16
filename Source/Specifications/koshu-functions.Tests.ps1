@@ -9,8 +9,7 @@ Describe "create_directory" {
         
 		create_directory $expectedPath
 		
-		$exists = test-path $expectedPath
-        $exists.should.be($true)
+		$expectedPath | Should Exist
     }
 	
 	It "creates a directory called test2" {
@@ -18,8 +17,7 @@ Describe "create_directory" {
         
 		create_directory $expectedPath
 		
-		$exists = test-path $expectedPath
-        $exists.should.be($true)
+		$expectedPath | Should Exist
     }
 	
 	It "throws when path is null" {
@@ -31,7 +29,7 @@ Describe "create_directory" {
 			$exceptionOccured = $true
 		}
         
-		$exceptionOccured.should.be($true)
+		$exceptionOccured | Should Be $true
     }
 
 }
@@ -44,7 +42,7 @@ Describe "delete_directory" {
 		
 		delete_directory $expectedPath
         
-		(test-path $expectedPath).should.be($false)
+		$expectedPath | Should Not Exist
     }
 	
 	It "throws when path is null" {
@@ -56,7 +54,7 @@ Describe "delete_directory" {
 			$exceptionOccured = $true
 		}
         
-		$exceptionOccured.should.be($true)
+		$exceptionOccured | Should Be $true
     }
 
 }
@@ -74,8 +72,8 @@ Describe "delete_files" {
 			new-item -type file -force $file1
 			new-item -type file -force $file2
 			
-			$file1.should.exist()
-			$file2.should.exist()
+			$file1 | Should Exist
+			$file2 | Should Exist
 		}	
 
 	    
@@ -84,8 +82,8 @@ Describe "delete_files" {
 		
 			delete_files $rootPath
 			
-			(test-path $file1).should.be($false)
-			(test-path $file2).should.be($false)
+			$file1 | Should Not Exist
+			$file2 | Should Not Exist
 		}
 		
 		It "deletes .txt files in a directory called dirwithfiles" {
@@ -93,8 +91,8 @@ Describe "delete_files" {
 		
 			delete_files $rootPath "*.txt"
 			
-			(test-path $file1).should.be($false)
-			(test-path $file2).should.be($true)
+			$file1 | Should Not Exist
+			$file2 | Should Exist
 		}
 		
 		It "deletes .jpg files in a directory called dirwithfiles" {
@@ -102,8 +100,8 @@ Describe "delete_files" {
 		
 			delete_files $rootPath "*.jpg"
 			
-			(test-path $file1).should.be($true)
-			(test-path $file2).should.be($false)
+			$file1 | Should Exist
+			$file2 | Should Not Exist
 		}
 		
 		It "deletes all files but .txt in a directory called dirwithfiles" {
@@ -111,8 +109,8 @@ Describe "delete_files" {
 		
 			delete_files $rootPath "*.*" "*.txt"
 			
-			(test-path $file1).should.be($true)
-			(test-path $file2).should.be($false)
+			$file1 | Should Exist
+			$file2 | Should Not Exist
 		}
 		
 		It "deletes all files but .jpg in a directory called dirwithfiles" {
@@ -120,8 +118,8 @@ Describe "delete_files" {
 		
 			delete_files $rootPath "*.*" "*.jpg"
 			
-			(test-path $file1).should.be($false)
-			(test-path $file2).should.be($true)
+			$file1 | Should Not Exist
+			$file2 | Should Exist
 		}
 
     }
@@ -150,9 +148,9 @@ Describe "find_down -file" {
 			set-content $file2 "File2"
 			set-content $file3 "File3"
 			
-			$file1.should.exist()
-			$file2.should.exist()
-			$file3.should.exist()
+			$file1 | Should Exist
+			$file2 | Should Exist
+			$file3 | Should Exist
 		}
 		
 		setup
@@ -163,7 +161,7 @@ Describe "find_down -file" {
 			$fileContent = (get-content (resolve-path $file))
 			$expectedContent = (get-content (resolve-path $file1))
 			
-			$fileContent.should.be($expectedContent)
+			$fileContent | Should Be $expectedContent
 		}
 		
 		It "finds file2 in dir1 directory" {
@@ -172,7 +170,7 @@ Describe "find_down -file" {
 			$fileContent = (get-content (resolve-path $file))
 			$expectedContent = (get-content (resolve-path $file2))
 		
-			$fileContent.should.be($expectedContent)
+			$fileContent | Should Be $expectedContent
 		}
 		
 		It "finds file3 in dir2 directory" {
@@ -181,7 +179,7 @@ Describe "find_down -file" {
 			$fileContent = (get-content (resolve-path $file))
 			$expectedContent = (get-content (resolve-path $file3))
 		
-			$fileContent.should.be($expectedContent)
+			$fileContent | Should Be $expectedContent
 		}
 		
 		It "finds no files" {
@@ -214,10 +212,10 @@ Describe "find_down -directory" {
 			create_directory $dir3
 			create_directory $dir4
 			
-			$dir1.should.exist()
-			$dir2.should.exist()
-			$dir3.should.exist()
-			$dir4.should.exist()
+			$dir1 | Should Exist
+			$dir2 | Should Exist
+			$dir3 | Should Exist
+			$dir4 | Should Exist
 		}
 		
 		setup
@@ -270,9 +268,9 @@ Describe "find_up -file" {
 			set-content $file2 "File2"
 			set-content $file3 "File3"
 			
-			$file1.should.exist()
-			$file2.should.exist()
-			$file3.should.exist()
+			$file1 | Should Exist
+			$file2 | Should Exist
+			$file3 | Should Exist
 		}
 	
 		It "finds file1 in root directory" {
@@ -283,7 +281,7 @@ Describe "find_up -file" {
 			$fileContent = (get-content (resolve-path $file))
 			$expectedContent = (get-content (resolve-path $file1))
 			
-			$fileContent.should.be($expectedContent)
+			$fileContent | Should Be $expectedContent
 		}
 		
 		It "finds file2 in dir1 directory" {
@@ -294,7 +292,7 @@ Describe "find_up -file" {
 			$fileContent = (get-content (resolve-path $file))
 			$expectedContent = (get-content (resolve-path $file2))
 		
-			$fileContent.should.be($expectedContent)
+			$fileContent | Should Be $expectedContent
 		}
 		
 		It "finds file3 in dir2 directory" {
@@ -305,7 +303,7 @@ Describe "find_up -file" {
 			$fileContent = (get-content (resolve-path $file))
 			$expectedContent = (get-content (resolve-path $file3))
 		
-			$fileContent.should.be($expectedContent)
+			$fileContent | Should Be $expectedContent
 		}
 		
 		It "finds no files" {
@@ -340,10 +338,10 @@ Describe "find_up -directory" {
 			create_directory $dir3
 			create_directory $dir4
 			
-			$dir1.should.exist()
-			$dir2.should.exist()
-			$dir3.should.exist()
-			$dir4.should.exist()
+			$dir1 | Should Exist
+			$dir2 | Should Exist
+			$dir3 | Should Exist
+			$dir4 | Should Exist
 		}
 		
 		setup
@@ -391,7 +389,7 @@ Describe "nuget_exe" {
 				$exceptionOccured = $true
 			}
 			
-			$exceptionOccured.should.be($true)
+			$exceptionOccured | Should Be $true
 		}
 
 	}
@@ -404,8 +402,7 @@ Describe "nuget_exe" {
 		It "installs psake" {
 			nuget_exe install psake -Version '4.2.0.1' -OutputDirectory $rootDir
 			
-			$exists = test-path "$rootDir\psake.4.2.0.1"
-			$exists.should.be($true)
+			"$rootDir\psake.4.2.0.1" | Should Exist
 		}
 
 	}
@@ -428,7 +425,7 @@ Describe "run" {
 				$exceptionOccured = $true
 			}
 			
-			$exceptionOccured.should.be($true)
+			$exceptionOccured | Should Be $true
 		}
 
 	}
@@ -447,7 +444,7 @@ Describe "run" {
 				$exceptionOccured = $true
 			}
 			
-			$exceptionOccured.should.be($true)
+			$exceptionOccured | Should Be $true
 		}
 
 	}
@@ -460,8 +457,7 @@ Describe "run" {
 		It "installs psake" {
 			run nuget.exe install psake -Version '4.2.0.1' -OutputDirectory $rootDir
 			
-			$exists = test-path "$rootDir\psake.4.2.0.1"
-			$exists.should.be($true)
+			"$rootDir\psake.4.2.0.1" | Should Exist
 		}
 
 	}

@@ -1,4 +1,4 @@
-param($installPath, $toolsPath, $package)
+param($installPath, $toolsPath, $package, $parameters)
 
 if (-not(Get-Module -name "koshu")) {
 	if ($toolsPath -eq $null) {
@@ -9,8 +9,18 @@ if (-not(Get-Module -name "koshu")) {
 	Import-Module $koshuModule -DisableNameChecking
 }
 
+if (-not $parameters.nologo) {
 @"
-=======================================================
-Koshu - The honey flavoured psake build automation tool
-=======================================================
+ _  __         _           
+| |/ /___  ___| |__  _   _ 
+| ' // _ \/ __| '_ \| | | |
+| . \ (_) \__ \ | | | |_| |
+|_|\_\___/|___/_| |_|\__,_|
+"@ | Write-Host
+}
+
+@"
+======================================================
+Koshu - The honey flavoured psake task automation tool
+======================================================
 "@ | Write-Host
