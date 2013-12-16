@@ -8,8 +8,8 @@
     <projectUrl>https://github.com/kristofferahl/Koshu/</projectUrl>
     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>The honey flavoured psake build automation tool</description>
-    <tags>psake build automation templates helpers</tags>
+    <description>The honey flavoured psake task automation tool</description>
+    <tags>psake task automation templates plugins</tags>
     <dependencies>
       <dependency id="Psake" version="4.2.0.1" />
     </dependencies>
