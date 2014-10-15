@@ -123,7 +123,7 @@ function Koshu-Scaffold {
 
 	$triggerFile = "$rootDir\$triggerName.cmd"
 	if (!(test-path $triggerFile)) {
-		(get-content "$($koshu.dir)\Templates\$template-trigger.cmd") -replace "buildFile.ps1","$templateName.ps1" -replace "TARGET",$buildTarget | out-file $triggerFile -encoding "Default" -force
+		(get-content "$($koshu.dir)\Templates\trigger.cmd") -replace "target",$buildTarget -replace "buildFile.ps1","$templateName.ps1" | out-file $triggerFile -encoding "Default" -force
 		Write-Host "Created build trigger $triggerFile"
 	}
 }
