@@ -37,7 +37,63 @@ Scaffolding a taskfile is as easy as calling Koshu-Scaffold passing a single par
 ### Bash
 
 	powershell koshu <taskFile> [<target>]
-	
+
+## Plugins
+
+Koshu can easily be extended through plugin packages. Plugin packages is simply a neat way for you to package up reusable powershell scripts and modules.
+
+A plugin is usually a nuget package containing a powershell module that you want to import and use when running tasks. Packages can also be defined as git repositories or directories on a file share. You can read more on how to create a plugin here: https://github.com/kristofferahl/Koshu.PluginTemplate
+
+### Using plugin packages
+
+Simply add a packages section at the top of your task file and specify the plugins you want to use.
+
+	packages @{
+	    "NugetPackageId"=""
+	}
+
+Some plugin packages supports the Koshu configuration model. It will give you a chance to change default values before running tasks.
+
+	config @{
+		"PackageName"=@{}
+	}
+
+Have a look at the plugins homepage to find out what configuration options that are available.
+
+#### NuGet package plugins
+
+	packages @{
+		# Unspecified version
+	    "NugetPackageId"=""
+
+	    # Specific version
+	    "NugetPackageId"=""
+	}
+
+#### Git repository plugins
+
+	packages @{
+		"PluginName"="git+file:///C/SomeDirectory/KoshuPluginRepository"
+		"PluginName"="git+file:///C/SomeDirectory/KoshuPluginRepository#branch"
+		"PluginName"="git+file:///C/SomeDirectory/KoshuPluginRepository#tag"
+		"PluginName"="git+file:///C/SomeDirectory/KoshuPluginRepository#sha"
+
+		"PluginName"="git+https://github.com/username/koshu-plugin.git"
+		"PluginName"="git+https://github.com/username/koshu-plugin.git#branch"
+		"PluginName"="git+https://github.com/username/koshu-plugin.git#tag"
+		"PluginName"="git+https://github.com/username/koshu-plugin.git#sha"
+	}
+
+#### Directory plugins
+
+	packages @{
+		"PluginName"="dir+C:\SomeDirectory" # Looks for a plugin at C:\SomeDirectory\PluginName
+	}
+
+## Plugins on Nuget
+
+https://www.nuget.org/packages?q=Tags%3A%22koshu%22
+
 ## Pack task
 
 Before you can call pack_solution you need to make sure that the project (csproj) file you want to pack has imported the Microsoft.WebApplication.targets file.
