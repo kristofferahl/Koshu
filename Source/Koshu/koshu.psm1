@@ -14,10 +14,10 @@ $koshu.psakeVersion	= '4.2.0.1'
 # Tasks
 #------------------------------------------------------------
 
-function Koshu-Build {
+function Invoke-Koshu {
 	[CmdletBinding()]
 	param(
-		[Parameter(Position=0,Mandatory=1)][string]$buildFile,
+		[Parameter(Position=0,Mandatory=1)][string]$taskFile,
 		[Parameter(Position=1,Mandatory=0)][string[]]$tasks=@("default"),
 		[Parameter(Position=2,Mandatory=0)][hashtable]$properties=@{}
 	)
@@ -25,32 +25,32 @@ function Koshu-Build {
 	Write-Host "Koshu - version " $koshu.version
 	Write-Host "Copyright (c) 2012 Kristoffer Ahl"
 
-	assert ($buildFile -ne $null -and $buildFile -ne "") "No build file specified!"
+	assert ($taskFile -ne $null -and $taskFile -ne "") "No taskfile specified."
 
-	if ("$buildFile".EndsWith(".ps1") -eq $false) {
-		$buildFile = "$buildFile.ps1"
+	if ("$taskFile".EndsWith(".ps1") -eq $false) {
+		$taskFile = "$taskFile.ps1"
 	}
 
-	if (-not (test-path $buildFile)) {
-		$buildFile = find_up $buildFile . -file
+	if (-not (test-path $taskFile)) {
+		$taskFile = find_up $taskFile . -file
 	}
 
-	assert (test-path $buildFile) "Build file not found: $buildFile"
+	assert (test-path $taskFile) "Taskfile not found: $taskFile"
 
 	$koshu.context.push(@{
 		"packagesDir" = (resolve-path "$($koshu.dir)\..\..")
 		"packages" = [ordered]@{}
 		"config" = [ordered]@{}
 		"initParameters" = @{
-			"rootDir" = ($buildFile | split-path -parent)
-			"buildFile" = $buildFile
+			"rootDir" = ($taskFile | split-path -parent)
+			"taskFile" = $taskFile
 			"tasks" = $tasks
 			"properties" = $properties
 		}
 	})
 
 	Write-Host "Invoking psake with properties:" ($properties | Out-String)
-	Invoke-Psake $buildFile -taskList $tasks -properties $properties -initialization {
+	Invoke-Psake $taskFile -taskList $tasks -properties $properties -initialization {
 		$context = $koshu.context.peek()
 		if ($context.packages.count -gt 0) {
 			Write-Host "Installing Koshu packages" -fore yellow
@@ -68,10 +68,10 @@ function Koshu-Build {
 
 	if ($psake.build_success -eq $false) {
 		if ($lastexitcode -ne 0) {
-			Write-Host "Build failed! Exit code: $lastexitcode." -fore red;
+			Write-Host "Koshu failed! Exit code: $lastexitcode." -fore red;
 			exit $lastexitcode
 		} else {
-			Write-Host "Build failed!" -fore RED;
+			Write-Host "Koshu failed!" -fore red;
 			exit 1
 		}
 	} else {
@@ -123,7 +123,7 @@ function Koshu-Scaffold {
 
 	$triggerFile = "$rootDir\$triggerName.cmd"
 	if (!(test-path $triggerFile)) {
-		(get-content "$($koshu.dir)\Templates\trigger.cmd") -replace "target",$buildTarget -replace "buildFile.ps1","$templateName.ps1" | out-file $triggerFile -encoding "Default" -force
+		(get-content "$($koshu.dir)\Templates\trigger.cmd") -replace "target",$buildTarget -replace "koshufile.ps1","$templateName.ps1" | out-file $triggerFile -encoding "Default" -force
 		Write-Host "Created build trigger $triggerFile"
 	}
 }
@@ -428,7 +428,7 @@ if(-not(Get-Module -name "psake")) {
 # Export
 #------------------------------------------------------------
 
-export-modulemember -function Koshu-Build, Koshu-Scaffold, Koshu-ScaffoldPlugin, Koshu-InstallPackage, Koshu-InitPackage
+export-modulemember -function Invoke-Koshu, Koshu-Scaffold, Koshu-ScaffoldPlugin, Koshu-InstallPackage, Koshu-InitPackage
 export-modulemember -function Packages, Config
 export-modulemember -function Install-NugetPackage, Install-GitPackage, Install-DirPackage
 export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, find_down, find_up
