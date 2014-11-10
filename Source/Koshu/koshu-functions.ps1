@@ -183,7 +183,7 @@ function find_and_execute([string]$commandName, $arguments) {
 		throw "Could not find '$commandName' and it does not seem to be in your path!"
 	}
 	
-	$fullCommand = "$command $arguments"
+	$fullCommand = "& '$command' $arguments"
 	((invoke-expression $fullCommand) 2>&1) | out-string
 	
 	if ($lastExitCode -ne 0) {
