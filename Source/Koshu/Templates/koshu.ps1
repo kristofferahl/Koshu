@@ -9,7 +9,8 @@ Param(
 $ErrorActionPreference = 'Stop'
 
 # Restore koshu nuget package
-$nuget = (Get-ChildItem -Path . -Filter NuGet.exe -Recurse | Select-Object -First 1)
+$paths = (1..3) | % { '.' + ('\*' * $_) }
+$nuget = (Get-ChildItem -Path $paths -Filter NuGet.exe | Select-Object -First 1)
 if ($nuget) { $nuget = $nuget.FullName } else { $nuget = "NuGet.exe" }
 try {
 	& $nuget install Koshu -version #Version# -outputdirectory "#PackagesPath#"
