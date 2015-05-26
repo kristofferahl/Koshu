@@ -85,7 +85,7 @@ function Koshu-Scaffold {
 		[Parameter(Position=0,Mandatory=1)][string]$template,
 		[Parameter(Position=1,Mandatory=0)][string]$productName='Product.Name',
 		[Parameter(Position=2,Mandatory=0)][string]$buildName='',
-		[Parameter(Position=3,Mandatory=0)][string]$buildTarget,
+		[Parameter(Position=3,Mandatory=0)][string]$target,
 		[Parameter(Position=4,Mandatory=0)][string]$rootDir='.\'
 	)
 
@@ -106,8 +106,8 @@ function Koshu-Scaffold {
 	$template			= $template.ToLower()
 	$buildName			= $buildName.ToLower()
 	$templateName		= ?: {$buildName -ne ''} {"$buildName-$template"} {"$template"}
-	$triggerName		= (?: {$buildTarget -ne $null -and $buildTarget -ne ''} {"$templateName-$buildTarget"} {"$templateName"}).ToString().ToLower()
-	$buildTarget		= (?: {$buildTarget -ne $null -and $buildTarget -ne ''} {"$buildTarget"} {"default"}).ToString().ToLower()
+	$triggerName		= (?: {$target -ne $null -and $target -ne ''} {"$templateName-$target"} {"$templateName"}).ToString().ToLower()
+	$target				= (?: {$target -ne $null -and $target -ne ''} {"$buildTarget"} {"default"}).ToString().ToLower()
 
 	$koshuFileSource		= "$($koshu.dir)\Templates\koshu.ps1"
 	$koshuFileDestination	= "$rootDir\koshu.ps1"
