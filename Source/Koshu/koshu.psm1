@@ -105,7 +105,7 @@ function Koshu-Scaffold {
 
 	$template			= $template.ToLower()
 	$buildName			= $buildName.ToLower()
-	$templateName		= ?: {$buildName -ne ''} {"$buildName-$template"} {"$template"} 
+	$templateName		= ?: {$buildName -ne ''} {"$buildName-$template"} {"$template"}
 	$triggerName		= (?: {$buildTarget -ne $null -and $buildTarget -ne ''} {"$templateName-$buildTarget"} {"$templateName"}).ToString().ToLower()
 	$buildTarget		= (?: {$buildTarget -ne $null -and $buildTarget -ne ''} {"$buildTarget"} {"default"}).ToString().ToLower()
 
@@ -123,8 +123,8 @@ function Koshu-Scaffold {
 
 	$triggerFile = "$rootDir\$triggerName.cmd"
 	if (!(test-path $triggerFile)) {
-		(get-content "$($koshu.dir)\Templates\trigger.cmd") -replace "target",$buildTarget -replace "koshufile.ps1","$templateName.ps1" | out-file $triggerFile -encoding "Default" -force
-		Write-Host "Created build trigger $triggerFile"
+		(get-content "$($koshu.dir)\Templates\trigger.cmd") -replace "default",$buildTarget -replace "koshufile.ps1","$templateName.ps1" | out-file $triggerFile -encoding "Default" -force
+		Write-Host "Created trigger cmd $triggerFile"
 	}
 }
 
