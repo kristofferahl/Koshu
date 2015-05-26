@@ -84,8 +84,8 @@ function Koshu-Scaffold {
 	param(
 		[Parameter(Position=0,Mandatory=1)][string]$template,
 		[Parameter(Position=1,Mandatory=0)][string]$productName='Product.Name',
-		[Parameter(Position=2,Mandatory=0)][string]$buildName='',
-		[Parameter(Position=3,Mandatory=0)][string]$target,
+		[Parameter(Position=2,Mandatory=0)][string]$taskfileName='koshufile',
+		[Parameter(Position=3,Mandatory=0)][string]$target='',
 		[Parameter(Position=4,Mandatory=0)][string]$rootDir='.\'
 	)
 
@@ -103,29 +103,24 @@ function Koshu-Scaffold {
 		} catch {}
 	}
 
-	$template			= $template.ToLower()
-	$buildName			= $buildName.ToLower()
-	$templateName		= ?: {$buildName -ne ''} {"$buildName-$template"} {"$template"}
-	$triggerName		= (?: {$target -ne $null -and $target -ne ''} {"$templateName-$target"} {"$templateName"}).ToString().ToLower()
-	$target				= (?: {$target -ne $null -and $target -ne ''} {"$buildTarget"} {"default"}).ToString().ToLower()
+	$template				= $template.ToLower()
+	$target					= (?: {$target -ne $null -and $target -ne ''} {"$target"} {"default"}).ToString().ToLower()
 
-	$koshuFileSource		= "$($koshu.dir)\Templates\koshu.ps1"
-	$koshuFileDestination	= "$rootDir\koshu.ps1"
+	$taskfileName			= (?: {$taskfileName -ne $null -and $taskfileName -ne ''} {"$taskfileName"} {"koshufile"}).ToString().ToLower()
+	$taskfileFullName		= "$taskfileName.ps1"
+	$taskfile 				= "$rootDir\$taskfileFullName"
+
+	$triggerfileName		= (?: {$taskfileName -ne 'koshufile'} {"$taskfileName"} {"koshu"}).ToString().ToLower()
+	$triggerfileFullName	= "$triggerfileName.cmd"
+	$triggerfile 			= "$rootDir\$triggerfileFullName"
+
+	$koshufileFullName		= 'koshu.ps1'
+	$koshufile				= "$rootDir\$koshufileFullName"
 	$packagesDir			= (Resolve-Path "$($koshu.dir)\..\..") -replace [regex]::Escape((Resolve-Path $rootDir)), "."
 
-	scaffold_koshufile $koshuFileSource $koshuFileDestination $koshu.version $packagesDir
-
-	$templateFile = "$rootDir\$templateName.ps1"
-	if (!(test-path $templateFile)) {
-		(get-content "$($koshu.dir)\Templates\$template.ps1") -replace "Product.Name", $productName | out-file $templateFile -encoding "Default" -force
-		Write-Host "Created build template $templateFile"
-	}
-
-	$triggerFile = "$rootDir\$triggerName.cmd"
-	if (!(test-path $triggerFile)) {
-		(get-content "$($koshu.dir)\Templates\trigger.cmd") -replace "default",$buildTarget -replace "koshufile.ps1","$templateName.ps1" | out-file $triggerFile -encoding "Default" -force
-		Write-Host "Created trigger cmd $triggerFile"
-	}
+	scaffold_koshutrigger "$($koshu.dir)\Templates\koshu.ps1" $koshufile $koshu.version $packagesDir
+	scaffold_triggercmd "$($koshu.dir)\Templates\trigger.cmd" $triggerfile $target $taskfileFullName
+	scaffold_taskfile "$($koshu.dir)\Templates\$template.ps1" $taskfile $productName
 }
 
 function Koshu-ScaffoldPlugin() {
