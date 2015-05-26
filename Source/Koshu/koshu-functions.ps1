@@ -29,7 +29,7 @@ function copy_files($source, $destination, $include=@("*.*"), $exclude=@()) {
 		Get-ChildItem $source -Recurse -Include $include -Exclude $exclude | % {
 			$itemPath = $_.FullName.Replace($fullSourcePath, $fullDestinationPath)
 
-			if ($koshu.verbose -eq $true) { 
+			if ($koshu.verbose -eq $true) {
 				Write-Host 'Copying '
 				Write-Host "Source: $_"
 				Write-Host "Destination: $itemPath"
@@ -54,15 +54,16 @@ function copy_files_flatten($source, $destination, $filter) {
 	}
 }
 
-function find_down($pattern, $path, [switch]$file, [switch]$directory) {
+function find_down($pattern, $path, $maxLevels=3, [switch]$file, [switch]$directory) {
 	if ($file -ne $true -and $directory -ne $true) {
 		throw "You must pass a switch for -file or -directory."
 	}
-	
+
 	if (test-path $path) {
-		if ($file) { $matcher = { get-childitem -path $path -filter $pattern -recurse | ?{ -not $_.PsIsContainer } } }
-		if ($directory) { $matcher = { get-childitem -path $path -filter $pattern -recurse | ?{ $_.PsIsContainer } } }
-		
+		$paths = (1..$maxLevels) | % { '' + $path + ('\*' * $_) }
+		if ($file) { $matcher = { get-childitem -path $paths -filter $pattern | ?{ -not $_.PsIsContainer } } }
+		if ($directory) { $matcher = { get-childitem -path $paths -filter $pattern | ?{ $_.PsIsContainer } } }
+
 		$matches = @((& $matcher))
 		if ($matches -ne $null -and $matches.length -gt 0) {
 			return $matches[0].FullName
@@ -86,7 +87,7 @@ function find_up($pattern, $path, $maxLevels=3, [switch]$file, [switch]$director
 			$type = "File"
 			$matcher = {get-childitem -path $path -filter $pattern -erroraction silentlycontinue | ?{ -not $_.PsIsContainer }}
 		}
-		
+
 		if ($directory) {
 			$type = "Directory"
 			$matcher = {get-childitem -path $path -filter $pattern -erroraction silentlycontinue | ?{ $_.PsIsContainer }}
@@ -133,14 +134,14 @@ function build_solution($solutionName, $configuration='release') {
 
 function pack_solution($solutionName, $destination, $packageName, $configuration='release') {
 	Assert (test-path $solutionName) "$solutionName could not be found"
-	
+
 	create_directory $destination
-	
+
 	$type = [IO.Path]::GetExtension((Resolve-Path $solutionName))
-	
+
 	$packageRoot	= (Resolve-Path $destination)
 	$packageDir		= "$packageRoot\$packageName"
-	
+
 	if ($type -eq ".csproj" -or $type -eq ".vbproj") {
 		$subDir = [IO.Path]::GetFileNameWithoutExtension((Resolve-Path $solutionName))
 		$packageDir	= "$packageDir\$subDir"
@@ -176,16 +177,16 @@ function find_and_execute([string]$commandName, $arguments) {
 
 	if ($command -eq $null) { $command = $commandName }
 	if ($command -eq $null)  { return }
-	
+
 	try {
 		& $command | out-null
 	} catch [System.Management.Automation.CommandNotFoundException] {
 		throw "Could not find '$commandName' and it does not seem to be in your path!"
 	}
-	
-	$fullCommand = "$command $arguments"
+
+	$fullCommand = "& '$command' $arguments"
 	((invoke-expression $fullCommand) 2>&1) | out-string
-	
+
 	if ($lastExitCode -ne 0) {
 		throw "An error occured when invoking command: '$fullCommand'."
 	}

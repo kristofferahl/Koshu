@@ -3,7 +3,7 @@
 #------------------------------------------------------------
 
 $script:koshu		= @{}
-$koshu.version		= '0.6.2'
+$koshu.version		= '0.7.0'
 $koshu.verbose		= $false
 $koshu.context		= new-object system.collections.stack # holds onto the current state of all variables
 $koshu.dir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "") -replace ".$"
@@ -14,10 +14,10 @@ $koshu.psakeVersion	= '4.2.0.1'
 # Tasks
 #------------------------------------------------------------
 
-function Koshu-Build {
+function Invoke-Koshu {
 	[CmdletBinding()]
 	param(
-		[Parameter(Position=0,Mandatory=1)][string]$buildFile,
+		[Parameter(Position=0,Mandatory=1)][string]$taskFile,
 		[Parameter(Position=1,Mandatory=0)][string[]]$tasks=@("default"),
 		[Parameter(Position=2,Mandatory=0)][hashtable]$properties=@{}
 	)
@@ -25,32 +25,32 @@ function Koshu-Build {
 	Write-Host "Koshu - version " $koshu.version
 	Write-Host "Copyright (c) 2012 Kristoffer Ahl"
 
-	assert ($buildFile -ne $null -and $buildFile -ne "") "No build file specified!"
+	assert ($taskFile -ne $null -and $taskFile -ne "") "No taskfile specified."
 
-	if ("$buildFile".EndsWith(".ps1") -eq $false) {
-		$buildFile = "$buildFile.ps1"
+	if ("$taskFile".EndsWith(".ps1") -eq $false) {
+		$taskFile = "$taskFile.ps1"
 	}
 
-	if (-not (test-path $buildFile)) {
-		$buildFile = find_up $buildFile . -file
+	if (-not (test-path $taskFile)) {
+		$taskFile = find_up $taskFile . -file
 	}
 
-	assert (test-path $buildFile) "Build file not found: $buildFile"
+	assert (test-path $taskFile) "Taskfile not found: $taskFile"
 
 	$koshu.context.push(@{
 		"packagesDir" = (resolve-path "$($koshu.dir)\..\..")
 		"packages" = [ordered]@{}
 		"config" = [ordered]@{}
 		"initParameters" = @{
-			"rootDir" = ($buildFile | split-path -parent)
-			"buildFile" = $buildFile
+			"rootDir" = ($taskFile | split-path -parent)
+			"taskFile" = $taskFile
 			"tasks" = $tasks
 			"properties" = $properties
 		}
 	})
 
 	Write-Host "Invoking psake with properties:" ($properties | Out-String)
-	Invoke-Psake $buildFile -taskList $tasks -properties $properties -initialization {
+	Invoke-Psake $taskFile -taskList $tasks -properties $properties -initialization {
 		$context = $koshu.context.peek()
 		if ($context.packages.count -gt 0) {
 			Write-Host "Installing Koshu packages" -fore yellow
@@ -68,10 +68,10 @@ function Koshu-Build {
 
 	if ($psake.build_success -eq $false) {
 		if ($lastexitcode -ne 0) {
-			Write-Host "Build failed! Exit code: $lastexitcode." -fore red;
+			Write-Host "Koshu failed! Exit code: $lastexitcode." -fore red;
 			exit $lastexitcode
 		} else {
-			Write-Host "Build failed!" -fore RED;
+			Write-Host "Koshu failed!" -fore red;
 			exit 1
 		}
 	} else {
@@ -84,8 +84,8 @@ function Koshu-Scaffold {
 	param(
 		[Parameter(Position=0,Mandatory=1)][string]$template,
 		[Parameter(Position=1,Mandatory=0)][string]$productName='Product.Name',
-		[Parameter(Position=2,Mandatory=0)][string]$buildName='',
-		[Parameter(Position=3,Mandatory=0)][string]$buildTarget,
+		[Parameter(Position=2,Mandatory=0)][string]$taskfileName='koshufile',
+		[Parameter(Position=3,Mandatory=0)][string]$target='',
 		[Parameter(Position=4,Mandatory=0)][string]$rootDir='.\'
 	)
 
@@ -103,29 +103,24 @@ function Koshu-Scaffold {
 		} catch {}
 	}
 
-	$template			= $template.ToLower()
-	$buildName			= $buildName.ToLower()
-	$templateName		= ?: {$buildName -ne ''} {"$buildName-$template"} {"$template"} 
-	$triggerName		= (?: {$buildTarget -ne $null -and $buildTarget -ne ''} {"$templateName-$buildTarget"} {"$templateName"}).ToString().ToLower()
-	$buildTarget		= (?: {$buildTarget -ne $null -and $buildTarget -ne ''} {"$buildTarget"} {"default"}).ToString().ToLower()
+	$template				= $template.ToLower()
+	$target					= (?: {$target -ne $null -and $target -ne ''} {"$target"} {"default"}).ToString().ToLower()
 
-	$koshuFileSource		= "$($koshu.dir)\Templates\koshu.ps1"
-	$koshuFileDestination	= "$rootDir\koshu.ps1"
+	$taskfileName			= (?: {$taskfileName -ne $null -and $taskfileName -ne ''} {"$taskfileName"} {"koshufile"}).ToString().ToLower()
+	$taskfileFullName		= "$taskfileName.ps1"
+	$taskfile 				= "$rootDir\$taskfileFullName"
+
+	$triggerfileName		= (?: {$taskfileName -ne 'koshufile'} {"$taskfileName"} {"koshu"}).ToString().ToLower()
+	$triggerfileFullName	= "$triggerfileName.cmd"
+	$triggerfile 			= "$rootDir\$triggerfileFullName"
+
+	$koshufileFullName		= 'koshu.ps1'
+	$koshufile				= "$rootDir\$koshufileFullName"
 	$packagesDir			= (Resolve-Path "$($koshu.dir)\..\..") -replace [regex]::Escape((Resolve-Path $rootDir)), "."
 
-	scaffold_koshufile $koshuFileSource $koshuFileDestination $koshu.version $packagesDir
-
-	$templateFile = "$rootDir\$templateName.ps1"
-	if (!(test-path $templateFile)) {
-		(get-content "$($koshu.dir)\Templates\$template.ps1") -replace "Product.Name", $productName | out-file $templateFile -encoding "Default" -force
-		Write-Host "Created build template $templateFile"
-	}
-
-	$triggerFile = "$rootDir\$triggerName.cmd"
-	if (!(test-path $triggerFile)) {
-		(get-content "$($koshu.dir)\Templates\$template-trigger.cmd") -replace "buildFile.ps1","$templateName.ps1" -replace "TARGET",$buildTarget | out-file $triggerFile -encoding "Default" -force
-		Write-Host "Created build trigger $triggerFile"
-	}
+	scaffold_koshutrigger "$($koshu.dir)\Templates\koshu.ps1" $koshufile $koshu.version $packagesDir
+	scaffold_triggercmd "$($koshu.dir)\Templates\trigger.cmd" $triggerfile $target $taskfileFullName
+	scaffold_taskfile "$($koshu.dir)\Templates\$template.ps1" $taskfile $productName
 }
 
 function Koshu-ScaffoldPlugin() {
@@ -428,7 +423,7 @@ if(-not(Get-Module -name "psake")) {
 # Export
 #------------------------------------------------------------
 
-export-modulemember -function Koshu-Build, Koshu-Scaffold, Koshu-ScaffoldPlugin, Koshu-InstallPackage, Koshu-InitPackage
+export-modulemember -function Invoke-Koshu, Koshu-Scaffold, Koshu-ScaffoldPlugin, Koshu-InstallPackage, Koshu-InitPackage
 export-modulemember -function Packages, Config
 export-modulemember -function Install-NugetPackage, Install-GitPackage, Install-DirPackage
 export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, find_down, find_up
