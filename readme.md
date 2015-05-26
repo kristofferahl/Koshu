@@ -28,15 +28,48 @@ Scaffolding a taskfile is as easy as calling Koshu-Scaffold passing a single par
 
 ### Powershell
 
-	.\koshu <taskFile> [<target>]
-	
+	.\koshu [<target>] [<taskFile>]
+
+#### Powershell examples
+
+	.\koshu
+	.\koshu compile
+	.\koshu -taskfile build.ps1
+	.\koshu compile build.ps1
+
 ### Command line
 
-	powershell .\koshu <taskFile> [<target>]
-	
+	powershell .\koshu [<target>] [<taskFile>]
+
+#### Command line examples
+
+	powershell .\koshu
+	powershell .\koshu compile
+	powershell .\koshu -taskfile build.ps1
+	powershell .\koshu compile build.ps1
+
 ### Bash
 
-	powershell koshu <taskFile> [<target>]
+	powershell koshu <target>] [<taskFile>]
+
+#### Bash examples
+
+	powershell koshu
+	powershell koshu compile
+	powershell koshu -taskfile build.ps1
+	powershell koshu compile build.ps1
+
+### Using koshu.cmd or <taskfile>.cmd
+
+#### From explorer
+
+	Simply double click .cmd to run
+
+#### From command line
+
+	koshu
+	koshu compile
+	koshu compile build.ps1
 
 ## Plugins
 
