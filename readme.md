@@ -50,7 +50,7 @@ Scaffolding a taskfile is as easy as calling Koshu-Scaffold passing a single par
 
 ### Bash
 
-	powershell koshu <target>] [<taskFile>]
+	powershell koshu [<target>] [<taskFile>]
 
 #### Bash examples
 
