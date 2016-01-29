@@ -17,8 +17,8 @@ $koshu.psakeVersion	= '4.5.0'
 function Invoke-Koshu {
 	[CmdletBinding()]
 	param(
-		[Parameter(Position=0,Mandatory=1)][string]$taskFile,
-		[Parameter(Position=1,Mandatory=0)][string[]]$tasks=@("default"),
+		[Parameter(Position = 0, Mandatory = 0)] [string] $taskFile,
+		[Parameter(Position = 1, Mandatory = 0)] [string[]] $tasks = @(),
 		[Parameter(Position = 2, Mandatory = 0)] [hashtable] $properties = @{},
 		[Parameter(Position = 3, Mandatory = 0)] [switch] $nologo = $false
 	)
@@ -28,9 +28,11 @@ function Invoke-Koshu {
 		Write-Host 'Copyright (c) 2012 Kristoffer Ahl'
 	}
 
-	assert ($taskFile -ne $null -and $taskFile -ne "") "No taskfile specified."
+	if ($taskFile -eq $null -or $taskFile -eq '') {
+		$taskFile = '.\koshufile.ps1'
+	}
 
-	if ("$taskFile".EndsWith(".ps1") -eq $false) {
+	if ("$taskFile".EndsWith('.ps1') -eq $false) {
 		$taskFile = "$taskFile.ps1"
 	}
 
@@ -38,7 +40,7 @@ function Invoke-Koshu {
 		$taskFile = find_up $taskFile . -file
 	}
 
-	assert (test-path $taskFile) "Taskfile not found: $taskFile"
+	assert ($taskFile -ne $null -and $taskFile -ne '' -and (test-path $taskFile)) "Taskfile not found: $taskFile"
 
 	$koshu.context.push(@{
 		"packagesDir" = (resolve-path "$($koshu.dir)\..\..")
@@ -53,7 +55,7 @@ function Invoke-Koshu {
 	})
 
 	Write-Host "Invoking psake with properties:" ($properties | Out-String)
-	Invoke-Psake $taskFile -taskList $tasks -properties $properties -initialization {
+	Invoke-Psake -buildFile $taskFile -taskList $tasks -properties $properties -initialization {
 		$context = $koshu.context.peek()
 		if ($context.packages.count -gt 0) {
 			Write-Host "Installing Koshu packages" -fore yellow
