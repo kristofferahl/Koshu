@@ -14,7 +14,7 @@ Describe "koshu.ps1" {
 
 		scaffold_koshutrigger $source $destination $version $packagesDir
 
-		$nugetSource = "C:\Nuget-Console\NuGet.exe"
+		$nugetSource = "${env:ProgramFiles(x86)}\Nuget\NuGet.exe"
 		$nugetDestinationDir = "$TestDrive\Source\.nuget"
 		$nugetDestination = "$nugetDestinationDir\NuGet.exe"
 		(New-Item $nugetDestinationDir -Type directory -Force)
