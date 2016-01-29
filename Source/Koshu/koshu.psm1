@@ -19,11 +19,14 @@ function Invoke-Koshu {
 	param(
 		[Parameter(Position=0,Mandatory=1)][string]$taskFile,
 		[Parameter(Position=1,Mandatory=0)][string[]]$tasks=@("default"),
-		[Parameter(Position=2,Mandatory=0)][hashtable]$properties=@{}
+		[Parameter(Position = 2, Mandatory = 0)] [hashtable] $properties = @{},
+		[Parameter(Position = 3, Mandatory = 0)] [switch] $nologo = $false
 	)
 
-	Write-Host "Koshu - version " $koshu.version
-	Write-Host "Copyright (c) 2012 Kristoffer Ahl"
+	if (-not $nologo) {
+		Write-Host "Koshu - version $($koshu.version)"
+		Write-Host 'Copyright (c) 2012 Kristoffer Ahl'
+	}
 
 	assert ($taskFile -ne $null -and $taskFile -ne "") "No taskfile specified."
 
@@ -64,7 +67,7 @@ function Invoke-Koshu {
 				Koshu-InitPackage -packageDir $context.initParameters.packageDir -initParameters $context.initParameters -config $packageConfig
 			}
 		}
-	};
+	} -nologo:$nologo;
 
 	if ($psake.build_success -eq $false) {
 		if ($lastexitcode -ne 0) {

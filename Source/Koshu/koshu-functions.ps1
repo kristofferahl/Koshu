@@ -192,7 +192,6 @@ function find_and_execute([string]$commandName, $arguments) {
 	}
 }
 
-
 function exec_retry([scriptblock]$command, [string]$commandName, [int]$retries = 3) {
 	$currentRetry = 0
 	$success = $false
