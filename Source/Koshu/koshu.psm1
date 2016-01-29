@@ -8,7 +8,7 @@ $koshu.verbose		= $false
 $koshu.context		= new-object system.collections.stack # holds onto the current state of all variables
 $koshu.dir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "") -replace ".$"
 $koshu.psakeDir		= ((Resolve-Path $koshu.dir) | Split-Path -parent | Split-Path  -parent)
-$koshu.psakeVersion	= '4.2.0.1'
+$koshu.psakeVersion	= '4.5.0'
 
 #------------------------------------------------------------
 # Tasks
