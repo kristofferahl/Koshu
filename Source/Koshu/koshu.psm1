@@ -9,6 +9,7 @@ $koshu.context		= new-object system.collections.stack # holds onto the current s
 $koshu.dir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "") -replace ".$"
 $koshu.psakeDir		= ((Resolve-Path $koshu.dir) | Split-Path -parent | Split-Path  -parent)
 $koshu.psakeVersion	= '4.5.0'
+$koshu.config       = @{ defaultTaskFile = 'koshufile.ps1' }
 
 #------------------------------------------------------------
 # Tasks
@@ -30,7 +31,7 @@ function Invoke-Koshu {
 	}
 
 	if ($taskFile -eq $null -or $taskFile -eq '') {
-		$taskFile = '.\koshufile.ps1'
+		$taskFile = $koshu.config.defaultTaskFile
 	}
 
 	if ("$taskFile".EndsWith('.ps1') -eq $false) {
