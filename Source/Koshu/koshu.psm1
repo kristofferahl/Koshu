@@ -26,6 +26,7 @@ function Invoke-Koshu {
 	if (-not $nologo) {
 		Write-Host "Koshu - version $($koshu.version)"
 		Write-Host 'Copyright (c) 2012 Kristoffer Ahl'
+		Write-Host ''
 	}
 
 	if ($taskFile -eq $null -or $taskFile -eq '') {
