@@ -2,6 +2,8 @@
 
 The honey flavoured psake task automation tool
 
+[![Gitter](https://badges.gitter.im/kristofferahl/Koshu.svg)](https://gitter.im/kristofferahl/Koshu?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 ## Installing Koshu
 
 Open up a command line and enter the following command:
