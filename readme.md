@@ -1,5 +1,7 @@
 # Koshu
 
+[![Join the chat at https://gitter.im/kristofferahl/Koshu](https://badges.gitter.im/kristofferahl/Koshu.svg)](https://gitter.im/kristofferahl/Koshu?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 The honey flavoured psake task automation tool
 
 ## Installing Koshu
