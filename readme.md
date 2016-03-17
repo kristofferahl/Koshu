@@ -2,6 +2,7 @@
 
 The honey flavoured psake task automation tool
 
+[![Build status](https://ci.appveyor.com/api/projects/status/verrum69shmd1kj5?svg=true)](https://ci.appveyor.com/project/kristofferahl/koshu)
 [![Gitter](https://badges.gitter.im/kristofferahl/Koshu.svg)](https://gitter.im/kristofferahl/Koshu?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ## Installing Koshu
