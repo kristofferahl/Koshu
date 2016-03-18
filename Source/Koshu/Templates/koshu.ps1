@@ -1,5 +1,5 @@
 Param(
-	[Parameter(Position=0,Mandatory=0)] [string]$tasks,
+	[Parameter(Position=0,Mandatory=0)] [string[]]$tasks,
 	[Parameter(Position=1,Mandatory=0)] [string]$taskFile,
 	[Parameter(Position=2,Mandatory=0)] [hashtable]$parameters = @{},
 	[Parameter(Position=3,Mandatory=0)] [hashtable]$properties = @{},
