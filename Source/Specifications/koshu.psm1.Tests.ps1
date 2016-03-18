@@ -6,7 +6,7 @@ Import-Module $koshuModule -DisableNameChecking -ArgumentList $packagesDir
 
 Describe "Koshu-Scaffold" {
 
-	Context "scaffolds a new build" {
+	Context "scaffolding a new build template" {
 
 		Koshu-Scaffold -template build -rootDir $TestDrive
 
@@ -22,17 +22,17 @@ Describe "Koshu-Scaffold" {
 			"$TestDrive\koshufile.ps1" | Should Exist
 		}
 
-		It "has taskfile set to koshufile.ps1 in koshu.cmd" {
-			"$TestDrive\koshu.cmd" | Should Contain "koshufile.ps1"
+		It "does not have a taskfile specified in koshu.cmd" {
+			"$TestDrive\koshu.cmd" | Should Not Contain "koshufile.ps1"
 		}
 
-		It "has target set to compile in koshu.cmd" {
-			"$TestDrive\koshu.cmd" | Should Contain "default"
+		It "does not have tasks specified in koshu.cmd" {
+			"$TestDrive\koshu.cmd" | Should Not Contain "default"
 		}
 
 	}
 
-	Context "scaffolds a new build template called build-web" {
+	Context "scaffolding a new build template with taskfilename" {
 
 		Koshu-Scaffold -template build -taskfilename "build-web" -rootDir $TestDrive
 
@@ -52,15 +52,33 @@ Describe "Koshu-Scaffold" {
 			"$TestDrive\build-web.cmd" | Should Contain "build-web.ps1"
 		}
 
-		It "has target set to compile in build-web.cmd" {
-			"$TestDrive\build-web.cmd" | Should Contain "default"
-		}
-
 	}
 
-	Context "scaffolds a new build template called build-web with target compile" {
+	Context "scaffolding a new build template with tasks" {
 
-		Koshu-Scaffold -template build -taskfilename "build-web" -target "compile" -rootDir $TestDrive
+			Koshu-Scaffold -template build -tasks "compile" -rootDir $TestDrive
+
+			It "creates koshu.ps1" {
+				"$TestDrive\koshu.ps1" | Should Exist
+			}
+
+			It "creates koshu.cmd" {
+				"$TestDrive\koshu.cmd" | Should Exist
+			}
+
+			It "creates koshufile.ps1" {
+				"$TestDrive\koshufile.ps1" | Should Exist
+			}
+
+			It "has tasks set to compile in koshu.cmd" {
+				"$TestDrive\koshu.cmd" | Should Contain "compile"
+			}
+
+	    }
+
+	Context "scaffolding a new build template with taskfilename and tasks" {
+
+		Koshu-Scaffold -template build -taskfilename "build-web" -tasks "compile" -rootDir $TestDrive
 
 		It "creates koshu.ps1" {
 			"$TestDrive\koshu.ps1" | Should Exist
@@ -78,7 +96,7 @@ Describe "Koshu-Scaffold" {
 			"$TestDrive\build-web.cmd" | Should Contain "build-web.ps1"
 		}
 
-		It "has target set to compile in build-web.cmd" {
+		It "has tasks set to compile in build-web.cmd" {
 			"$TestDrive\build-web.cmd" | Should Contain "compile"
 		}
 

@@ -92,7 +92,7 @@ function Koshu-Scaffold {
 		[Parameter(Position=0,Mandatory=1)][string]$template,
 		[Parameter(Position=1,Mandatory=0)][string]$productName='Product.Name',
 		[Parameter(Position=2,Mandatory=0)][string]$taskfileName='koshufile',
-		[Parameter(Position=3,Mandatory=0)][string]$target='',
+		[Parameter(Position=3,Mandatory=0)][string]$tasks='',
 		[Parameter(Position=4,Mandatory=0)][string]$rootDir='.\'
 	)
 
@@ -111,7 +111,7 @@ function Koshu-Scaffold {
 	}
 
 	$template				= $template.ToLower()
-	$target					= (?: {$target -ne $null -and $target -ne ''} {"$target"} {"default"}).ToString().ToLower()
+	$tasks					= (?: {$tasks -ne $null -and $tasks -ne ''} {"$tasks"} {"default"}).ToString().ToLower()
 
 	$taskfileName			= (?: {$taskfileName -ne $null -and $taskfileName -ne ''} {"$taskfileName"} {"koshufile"}).ToString().ToLower()
 	$taskfileFullName		= "$taskfileName.ps1"
@@ -126,7 +126,7 @@ function Koshu-Scaffold {
 	$packagesDir			= (Resolve-Path "$($koshu.dir)\..\..") -replace [regex]::Escape((Resolve-Path $rootDir)), "."
 
 	scaffold_koshutrigger "$($koshu.dir)\Templates\koshu.ps1" $koshufile $koshu.version $packagesDir
-	scaffold_triggercmd "$($koshu.dir)\Templates\trigger.cmd" $triggerfile $target $taskfileFullName
+	scaffold_triggercmd "$($koshu.dir)\Templates\trigger.cmd" $triggerfile $tasks $taskfileFullName
 	scaffold_taskfile "$($koshu.dir)\Templates\$template.ps1" $taskfile $productName
 }
 
@@ -410,7 +410,6 @@ filter invoke_ternary([scriptblock]$decider, [scriptblock]$iftrue, [scriptblock]
 #------------------------------------------------------------
 
 set-alias ?: invoke_ternary
-
 
 #------------------------------------------------------------
 # Setup
