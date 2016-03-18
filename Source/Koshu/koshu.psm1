@@ -65,7 +65,6 @@ function Invoke-Koshu {
 		}
 	})
 
-	Write-Host "Invoking psake with properties:" ($properties | Out-String)
 	Invoke-Psake -buildFile $taskFile -taskList $tasks -framework $framework -docs:$docs -parameters $parameters -properties $properties -initialization {
 		$context = $koshu.context.peek()
 		# Simple dot sourcing will not work. We have to force the script block into the psake
