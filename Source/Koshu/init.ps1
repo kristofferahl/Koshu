@@ -9,18 +9,17 @@ if (-not(Get-Module -name "koshu")) {
 	Import-Module $koshuModule -DisableNameChecking
 }
 
-if (-not $parameters.nologo) {
+if ($parameters.load) {
 @"
- _  __         _           
-| |/ /___  ___| |__  _   _ 
+ _  __         _
+| |/ /___  ___| |__  _   _
 | ' // _ \/ __| '_ \| | | |
 | . \ (_) \__ \ | | | |_| |
 |_|\_\___/|___/_| |_|\__,_|
-"@ | Write-Host
-}
 
-@"
 ======================================================
 Koshu - The honey flavoured psake task automation tool
 ======================================================
+
 "@ | Write-Host
+}

@@ -18,10 +18,15 @@ $koshu.config       = @{ defaultTaskFile = 'koshufile.ps1' }
 function Invoke-Koshu {
 	[CmdletBinding()]
 	param(
-		[Parameter(Position = 0, Mandatory = 0)] [string] $taskFile,
-		[Parameter(Position = 1, Mandatory = 0)] [string[]] $tasks = @(),
-		[Parameter(Position = 2, Mandatory = 0)] [hashtable] $properties = @{},
-		[Parameter(Position = 3, Mandatory = 0)] [switch] $nologo = $false
+		[Parameter(Position = 0, Mandatory = 0)] [string] $taskFile, # TODO: Rename to buildFile to sync with Psake?
+		[Parameter(Position = 1, Mandatory = 0)] [string[]] $tasks = @(), # TODO: Rename to taskList to sync with Psake?
+		[Parameter(Position = 2, Mandatory = 0)] [string] $framework,
+		[Parameter(Position = 3, Mandatory = 0)] [switch] $docs = $false,
+		[Parameter(Position = 4, Mandatory = 0)] [hashtable] $parameters = @{},
+		[Parameter(Position = 5, Mandatory = 0)] [hashtable] $properties = @{},
+		[Parameter(Position = 6, Mandatory = 0)] [alias("init")][scriptblock] $initialization = {},
+		[Parameter(Position = 7, Mandatory = 0)] [switch] $nologo = $false,
+		[Parameter(Position = 8, Mandatory = 0)] [switch] $detailedDocs = $false
 	)
 
 	if (-not $nologo) {
@@ -45,6 +50,10 @@ function Invoke-Koshu {
 	assert ($taskFile -ne $null -and $taskFile -ne '' -and (test-path $taskFile)) "Taskfile not found: $taskFile"
 
 	$koshu.context.push(@{
+		"psake" = [ordered]@{
+			"module" = (Get-Module -name psake)
+			"initialization" = $initialization
+		}
 		"packagesDir" = (resolve-path "$($koshu.dir)\..\..")
 		"packages" = [ordered]@{}
 		"config" = [ordered]@{}
@@ -57,8 +66,12 @@ function Invoke-Koshu {
 	})
 
 	Write-Host "Invoking psake with properties:" ($properties | Out-String)
-	Invoke-Psake -buildFile $taskFile -taskList $tasks -properties $properties -initialization {
+	Invoke-Psake -buildFile $taskFile -taskList $tasks -framework $framework -docs:$docs -parameters $parameters -properties $properties -initialization {
 		$context = $koshu.context.peek()
+		# Simple dot sourcing will not work. We have to force the script block into the psake
+		# module's scope in order to initialize variables properly.
+		. $context.psake.module $context.psake.initialization
+
 		if ($context.packages.count -gt 0) {
 			Write-Host "Installing Koshu packages" -fore yellow
 			$context.packages.GetEnumerator() | % {
@@ -71,7 +84,7 @@ function Invoke-Koshu {
 				Koshu-InitPackage -packageDir $context.initParameters.packageDir -initParameters $context.initParameters -config $packageConfig
 			}
 		}
-	} -nologo:$nologo;
+	} -nologo:$nologo -detailedDocs:$detailedDocs;
 
 	if ($psake.build_success -eq $false) {
 		if ($lastexitcode -ne 0) {
