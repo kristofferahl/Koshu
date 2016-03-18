@@ -2,7 +2,7 @@
 # Variables
 #------------------------------------------------------------
 
-$script:koshu		= @{}
+$script:koshu		= [ordered]@{}
 $koshu.version		= '0.7.0'
 $koshu.verbose		= $false
 $koshu.context		= new-object system.collections.stack # holds onto the current state of all variables
