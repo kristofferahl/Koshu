@@ -3,7 +3,7 @@
 #------------------------------------------------------------
 
 $script:koshu		= [ordered]@{}
-$koshu.version		= '0.7.0'
+$koshu.version		= '0.8.0'
 $koshu.verbose		= $false
 $koshu.context		= new-object system.collections.stack # holds onto the current state of all variables
 $koshu.dir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "") -replace ".$"
