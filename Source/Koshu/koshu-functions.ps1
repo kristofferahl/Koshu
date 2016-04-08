@@ -192,14 +192,13 @@ function find_and_execute([string]$commandName, $arguments) {
 	}
 }
 
-
 function exec_retry([scriptblock]$command, [string]$commandName, [int]$retries = 3) {
 	$currentRetry = 0
 	$success = $false
 
 	do {
 		try {
-			& $command;
+			& $command
 			$success = $true
 			Write-Host "Successfully executed [$commandName] command. Number of retries: $currentRetry."
 		} catch [System.Exception] {
@@ -207,8 +206,8 @@ function exec_retry([scriptblock]$command, [string]$commandName, [int]$retries =
 			if ($currentRetry -gt $retries) {
 				throw "Can not execute [$commandName] command. The error: " + $_.Exception.ToString()
 			} else {
-			Write-Host "Sleeping before $currentRetry retry of [$commandName] command"
-			Start-Sleep -s 1
+				Write-Host "Sleeping before $currentRetry retry of [$commandName] command"
+				Start-Sleep -s 1
 			}
 			$currentRetry = $currentRetry + 1
 		}

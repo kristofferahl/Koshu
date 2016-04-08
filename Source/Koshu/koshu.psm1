@@ -2,13 +2,14 @@
 # Variables
 #------------------------------------------------------------
 
-$script:koshu		= @{}
-$koshu.version		= '0.7.0'
+$script:koshu		= [ordered]@{}
+$koshu.version		= '0.8.0'
 $koshu.verbose		= $false
 $koshu.context		= new-object system.collections.stack # holds onto the current state of all variables
 $koshu.dir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "") -replace ".$"
 $koshu.psakeDir		= ((Resolve-Path $koshu.dir) | Split-Path -parent | Split-Path  -parent)
-$koshu.psakeVersion	= '4.2.0.1'
+$koshu.psakeVersion	= '4.6.0'
+$koshu.config       = @{ defaultTaskFile = 'koshufile.ps1' }
 
 #------------------------------------------------------------
 # Tasks
@@ -17,17 +18,29 @@ $koshu.psakeVersion	= '4.2.0.1'
 function Invoke-Koshu {
 	[CmdletBinding()]
 	param(
-		[Parameter(Position=0,Mandatory=1)][string]$taskFile,
-		[Parameter(Position=1,Mandatory=0)][string[]]$tasks=@("default"),
-		[Parameter(Position=2,Mandatory=0)][hashtable]$properties=@{}
+		[Parameter(Position = 0, Mandatory = 0)] [string] $taskFile, # TODO: Rename to buildFile to sync with Psake?
+		[Parameter(Position = 1, Mandatory = 0)] [string[]] $tasks = @(), # TODO: Rename to taskList to sync with Psake?
+		[Parameter(Position = 2, Mandatory = 0)] [string] $framework,
+		[Parameter(Position = 3, Mandatory = 0)] [switch] $docs = $false,
+		[Parameter(Position = 4, Mandatory = 0)] [hashtable] $parameters = @{},
+		[Parameter(Position = 5, Mandatory = 0)] [hashtable] $properties = @{},
+		[Parameter(Position = 6, Mandatory = 0)] [alias("init")][scriptblock] $initialization = {},
+		[Parameter(Position = 7, Mandatory = 0)] [switch] $nologo = $false,
+		[Parameter(Position = 8, Mandatory = 0)] [switch] $detailedDocs = $false,
+		[Parameter(Position = 9, Mandatory = 0)] [switch] $notr = $false
 	)
 
-	Write-Host "Koshu - version " $koshu.version
-	Write-Host "Copyright (c) 2012 Kristoffer Ahl"
+	if (-not $nologo) {
+		Write-Host "Koshu - version $($koshu.version)"
+		Write-Host 'Copyright (c) 2012 Kristoffer Ahl'
+		Write-Host ''
+	}
 
-	assert ($taskFile -ne $null -and $taskFile -ne "") "No taskfile specified."
+	if ($taskFile -eq $null -or $taskFile -eq '') {
+		$taskFile = $koshu.config.defaultTaskFile
+	}
 
-	if ("$taskFile".EndsWith(".ps1") -eq $false) {
+	if ("$taskFile".EndsWith('.ps1') -eq $false) {
 		$taskFile = "$taskFile.ps1"
 	}
 
@@ -35,9 +48,13 @@ function Invoke-Koshu {
 		$taskFile = find_up $taskFile . -file
 	}
 
-	assert (test-path $taskFile) "Taskfile not found: $taskFile"
+	assert ($taskFile -ne $null -and $taskFile -ne '' -and (test-path $taskFile)) "Taskfile not found: $taskFile"
 
 	$koshu.context.push(@{
+		"psake" = [ordered]@{
+			"module" = (Get-Module -name psake)
+			"initialization" = $initialization
+		}
 		"packagesDir" = (resolve-path "$($koshu.dir)\..\..")
 		"packages" = [ordered]@{}
 		"config" = [ordered]@{}
@@ -49,9 +66,12 @@ function Invoke-Koshu {
 		}
 	})
 
-	Write-Host "Invoking psake with properties:" ($properties | Out-String)
-	Invoke-Psake $taskFile -taskList $tasks -properties $properties -initialization {
+	Invoke-Psake -buildFile $taskFile -taskList $tasks -framework $framework -docs:$docs -parameters $parameters -properties $properties -initialization {
 		$context = $koshu.context.peek()
+		# Simple dot sourcing will not work. We have to force the script block into the psake
+		# module's scope in order to initialize variables properly.
+		. $context.psake.module $context.psake.initialization
+
 		if ($context.packages.count -gt 0) {
 			Write-Host "Installing Koshu packages" -fore yellow
 			$context.packages.GetEnumerator() | % {
@@ -64,7 +84,7 @@ function Invoke-Koshu {
 				Koshu-InitPackage -packageDir $context.initParameters.packageDir -initParameters $context.initParameters -config $packageConfig
 			}
 		}
-	};
+	} -nologo:$nologo -detailedDocs:$detailedDocs -notr:$notr;
 
 	if ($psake.build_success -eq $false) {
 		if ($lastexitcode -ne 0) {
@@ -85,7 +105,7 @@ function Koshu-Scaffold {
 		[Parameter(Position=0,Mandatory=1)][string]$template,
 		[Parameter(Position=1,Mandatory=0)][string]$productName='Product.Name',
 		[Parameter(Position=2,Mandatory=0)][string]$taskfileName='koshufile',
-		[Parameter(Position=3,Mandatory=0)][string]$target='',
+		[Parameter(Position=3,Mandatory=0)][string]$tasks='',
 		[Parameter(Position=4,Mandatory=0)][string]$rootDir='.\'
 	)
 
@@ -104,7 +124,7 @@ function Koshu-Scaffold {
 	}
 
 	$template				= $template.ToLower()
-	$target					= (?: {$target -ne $null -and $target -ne ''} {"$target"} {"default"}).ToString().ToLower()
+	$tasks					= (?: {$tasks -ne $null -and $tasks -ne ''} {"$tasks"} {"default"}).ToString().ToLower()
 
 	$taskfileName			= (?: {$taskfileName -ne $null -and $taskfileName -ne ''} {"$taskfileName"} {"koshufile"}).ToString().ToLower()
 	$taskfileFullName		= "$taskfileName.ps1"
@@ -119,7 +139,7 @@ function Koshu-Scaffold {
 	$packagesDir			= (Resolve-Path "$($koshu.dir)\..\..") -replace [regex]::Escape((Resolve-Path $rootDir)), "."
 
 	scaffold_koshutrigger "$($koshu.dir)\Templates\koshu.ps1" $koshufile $koshu.version $packagesDir
-	scaffold_triggercmd "$($koshu.dir)\Templates\trigger.cmd" $triggerfile $target $taskfileFullName
+	scaffold_triggercmd "$($koshu.dir)\Templates\trigger.cmd" $triggerfile $tasks $taskfileFullName
 	scaffold_taskfile "$($koshu.dir)\Templates\$template.ps1" $taskfile $productName
 }
 
@@ -403,7 +423,6 @@ filter invoke_ternary([scriptblock]$decider, [scriptblock]$iftrue, [scriptblock]
 #------------------------------------------------------------
 
 set-alias ?: invoke_ternary
-
 
 #------------------------------------------------------------
 # Setup
