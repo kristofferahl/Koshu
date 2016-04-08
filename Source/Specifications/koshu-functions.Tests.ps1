@@ -400,9 +400,9 @@ Describe "nuget_exe" {
 		create_directory $rootDir
 
 		It "installs psake" {
-			nuget_exe install psake -Version '4.5.0' -OutputDirectory $rootDir
+			nuget_exe install psake -Version '4.6.0' -OutputDirectory $rootDir
 
-			"$rootDir\psake.4.5.0" | Should Exist
+			"$rootDir\psake.4.6.0" | Should Exist
 		}
 
 	}
@@ -455,9 +455,9 @@ Describe "run" {
 		create_directory $rootDir
 
 		It "installs psake" {
-			run nuget.exe install psake -Version '4.5.0' -OutputDirectory $rootDir
+			run nuget.exe install psake -Version '4.6.0' -OutputDirectory $rootDir
 
-			"$rootDir\psake.4.5.0" | Should Exist
+			"$rootDir\psake.4.6.0" | Should Exist
 		}
 
 	}
