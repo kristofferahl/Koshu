@@ -8,4 +8,4 @@ mkdir 'Build\Temp' -force | out-null
 & $nuget pack 'Source\Koshu.nuspec' -Version 0.0.1 -OutputDirectory "Build\Temp" -NoPackageAnalysis
 
 Import-Module ".\Source\packages\Pester.$pesterVersion\tools\Pester.psm1"
-Invoke-Pester '.\Source\Specifications\*'
+Invoke-Pester '.\Source\Specifications\*' -EnableExit
