@@ -2,6 +2,9 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 . "$here\test-helpers.ps1"
 . "$here\..\Koshu\koshu-functions.ps1"
 
+$script:koshu = [ordered]@{}
+$koshu.verbose = $false
+
 Describe "create_directory" {
 
 	It "creates a directory called test1" {
