@@ -5,9 +5,9 @@ function scaffold_koshutrigger($source, $destination, $version, $packagesDir) {
 				% { $_ -replace "#PackagesPath#",$packagesDir } |
 					out-file $destination -encoding "Default" -force
 
-		write-host "Created koshu trigger $destination"
+		write-output "- Created koshu trigger $destination"
 	} else {
-		write-host "$destination already exists" -fore yellow
+		write-output "- $destination already exists"
 	}
 }
 
@@ -17,19 +17,18 @@ function scaffold_triggercmd($source, $destination, $tasks, $taskfile) {
 		if ($tasks -ne 'default') { $triggerArgs = "$tasks " }
 		if ($taskfile -ne 'koshufile.ps1') { $triggerArgs += "$taskfile " }
 		$triggerArgs += '%*'
-		write-host "$triggerArgs"
 		(get-content $source) -replace 'koshuargs',$triggerArgs | out-file $destination -encoding "Default" -force
-		write-host "Created trigger cmd $destination. Taskfile: $taskfile. Tasks: $tasks."
+		write-output "- Created trigger cmd $destination. Taskfile: $taskfile. Tasks: $tasks."
 	} else {
-		write-host "$destination already exists" -fore yellow
+		write-output "- $destination already exists"
 	}
 }
 
 function scaffold_taskfile($source, $destination, $productName) {
 	if (!(test-path $destination)) {
 		(get-content $source) -replace "Product.Name", $productName | out-file $destination -encoding "Default" -force
-		write-host "Created taskfile $destination"
+		write-output "- Created taskfile $destination"
 	} else {
-		write-host "$destination already exists" -fore yellow
+		write-output "- $destination already exists"
 	}
 }
