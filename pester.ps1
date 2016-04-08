@@ -7,6 +7,4 @@ nuget pack "Source\Koshu.nuspec" -Version 0.0.1 -OutputDirectory "Build\Temp"
 $pesterDir = ".\Source\packages\Pester.2.0.3\tools"
 Import-Module "$pesterDir\Pester.psm1";
 
-clear
-
 Invoke-Pester .\Source\Specifications\*
