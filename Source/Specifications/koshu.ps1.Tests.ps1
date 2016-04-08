@@ -41,7 +41,6 @@ Describe "koshu.ps1" {
 	Context "when nuget is in the path" {
 
 		if ($env:Path.Contains("c:\Nuget-Console\;") -eq $false) {
-			Write-Host "Adding nuget to path" -Fore yellow
 			$env:Path = $env:Path.TrimEnd(';')
 			$env:Path = $env:Path + ";c:\Nuget-Console\;"
 		}
