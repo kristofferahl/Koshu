@@ -396,13 +396,14 @@ Describe "nuget_exe" {
 
 	Context "install" {
 
+		$koshuVersion = get-content "$here\..\..\.version"
 		$rootDir = (testdir $TestDrive)
 		create_directory $rootDir
 
 		It "installs latest version of koshu" {
-			nuget_exe install koshu -Version $koshu.version -OutputDirectory $rootDir -ConfigFile (nuget_configfile)
+			nuget_exe install koshu -Version $koshuVersion -OutputDirectory $rootDir -ConfigFile (nuget_configfile)
 
-			"$rootDir\koshu.$($koshu.version)" | Should Exist
+			"$rootDir\koshu.$($koshuVersion)" | Should Exist
 		}
 
 		It "installs built version of koshu" {
