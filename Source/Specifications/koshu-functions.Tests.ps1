@@ -406,12 +406,6 @@ Describe "nuget_exe" {
 			"$rootDir\koshu.$($koshuVersion)" | Should Exist
 		}
 
-		It "installs built version of koshu" {
-			nuget_exe install Koshu -Version '0.0.1' -OutputDirectory $rootDir -ConfigFile (nuget_configfile)
-
-			"$rootDir\Koshu.0.0.1" | Should Exist
-		}
-
 	}
 
 }
