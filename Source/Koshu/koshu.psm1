@@ -26,7 +26,8 @@ function Invoke-Koshu {
 		[Parameter(Position = 5, Mandatory = 0)] [hashtable] $properties = @{},
 		[Parameter(Position = 6, Mandatory = 0)] [alias("init")][scriptblock] $initialization = {},
 		[Parameter(Position = 7, Mandatory = 0)] [switch] $nologo = $false,
-		[Parameter(Position = 8, Mandatory = 0)] [switch] $detailedDocs = $false
+		[Parameter(Position = 8, Mandatory = 0)] [switch] $detailedDocs = $false,
+		[Parameter(Position = 9, Mandatory = 0)] [switch] $notr = $false
 	)
 
 	if (-not $nologo) {
@@ -83,7 +84,7 @@ function Invoke-Koshu {
 				Koshu-InitPackage -packageDir $context.initParameters.packageDir -initParameters $context.initParameters -config $packageConfig
 			}
 		}
-	} -nologo:$nologo -detailedDocs:$detailedDocs;
+	} -nologo:$nologo -detailedDocs:$detailedDocs -notr:$notr;
 
 	if ($psake.build_success -eq $false) {
 		if ($lastexitcode -ne 0) {
