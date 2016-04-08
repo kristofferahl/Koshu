@@ -4,13 +4,13 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Describe "create_directory" {
 
-    It "creates a directory called test1" {
+	It "creates a directory called test1" {
 		$expectedPath = "$TestDrive\Test1"
 
 		create_directory $expectedPath
 
 		$expectedPath | Should Exist
-    }
+	}
 
 	It "creates a directory called test2" {
 		$expectedPath = "$TestDrive\Test2"
@@ -18,7 +18,7 @@ Describe "create_directory" {
 		create_directory $expectedPath
 
 		$expectedPath | Should Exist
-    }
+	}
 
 	It "throws when path is null" {
 		$exceptionOccured = $false
@@ -30,20 +30,20 @@ Describe "create_directory" {
 		}
 
 		$exceptionOccured | Should Be $true
-    }
+	}
 
 }
 
 Describe "delete_directory" {
 
-    It "deletes a directory called test1" {
+	It "deletes a directory called test1" {
 		$expectedPath = "$TestDrive\Test1"
-        create_directory $expectedPath
+		create_directory $expectedPath
 
 		delete_directory $expectedPath
 
 		$expectedPath | Should Not Exist
-    }
+	}
 
 	It "throws when path is null" {
 		$exceptionOccured = $false
@@ -55,7 +55,7 @@ Describe "delete_directory" {
 		}
 
 		$exceptionOccured | Should Be $true
-    }
+	}
 
 }
 
@@ -122,7 +122,7 @@ Describe "delete_files" {
 			$file2 | Should Exist
 		}
 
-    }
+	}
 
 }
 
@@ -399,10 +399,16 @@ Describe "nuget_exe" {
 		$rootDir = (testdir $TestDrive)
 		create_directory $rootDir
 
-		It "installs psake" {
-			nuget_exe install psake -Version '4.6.0' -OutputDirectory $rootDir
+		It "installs latest version of koshu" {
+			nuget_exe install koshu -Version $koshu.version -OutputDirectory $rootDir -ConfigFile (nuget_configfile)
 
-			"$rootDir\psake.4.6.0" | Should Exist
+			"$rootDir\koshu.$($koshu.version)" | Should Exist
+		}
+
+		It "installs built version of koshu" {
+			nuget_exe install Koshu -Version '0.0.1' -OutputDirectory $rootDir -ConfigFile (nuget_configfile)
+
+			"$rootDir\Koshu.0.0.1" | Should Exist
 		}
 
 	}
