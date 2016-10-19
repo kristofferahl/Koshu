@@ -15,6 +15,8 @@ This will create a file called koshu.ps1 in the current directory. This file ena
 
 **Note nuget must be in your path or located in a subdirectory of the current directory.**
 
+Currently only NuGet version 2.8.6 or lower is supported.
+
 ## Initializing Koshu
 
 In powershell, enter the path to the koshu.ps1 file and invoke it with the switch -load.
