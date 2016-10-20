@@ -117,49 +117,6 @@ function find_up($pattern, $path, $maxLevels=3, [switch]$file, [switch]$director
 	return $null
 }
 
-function build_solution($solutionName, $configuration='release') {
-	Assert (test-path $solutionName) "$solutionName could not be found"
-	$buildVerbosity = 'quiet'
-	if ($koshu.verbose -eq $true) {
-		$buildVerbosity = 'minimal'
-	}
-	exec {
-		msbuild $solutionName /target:Rebuild /property:Configuration=$configuration /verbosity:$buildVerbosity
-	}
-}
-
-function pack_solution($solutionName, $destination, $packageName, $configuration='release') {
-	Assert (test-path $solutionName) "$solutionName could not be found"
-
-	create_directory $destination
-
-	$type = [IO.Path]::GetExtension((Resolve-Path $solutionName))
-
-	$packageRoot	= (Resolve-Path $destination)
-	$packageDir		= "$packageRoot\$packageName"
-
-	if ($type -eq ".csproj" -or $type -eq ".vbproj") {
-		$subDir = [IO.Path]::GetFileNameWithoutExtension((Resolve-Path $solutionName))
-		$packageDir	= "$packageDir\$subDir"
-	}
-
-	create_directory $packageDir
-
-	$buildVerbosity = 'quiet'
-	if ($koshu.verbose -eq $true) {
-		$buildVerbosity = 'minimal'
-	}
-
-	exec {
-		msbuild $solutionName `
-			/target:Publish `
-			/property:Configuration=$configuration `
-			/property:_PackageTempDir=$packageDir `
-			/property:AutoParameterizationWebConfigConnectionStrings=False `
-			/verbosity:$buildVerbosity
-	}
-}
-
 function nuget_exe() {
 	find_and_execute "NuGet.exe" $args
 }
@@ -209,4 +166,52 @@ function exec_retry([scriptblock]$command, [string]$commandName, [int]$retries =
 		}
 	}
 	while (!$success)
+}
+
+function build {
+	param(
+		[Parameter(Position = 0, Mandatory = 1)] [string] $file,
+		[Parameter(Position = 1, Mandatory = 0)] [string] $destination = $null,
+		[Parameter(Position = 2, Mandatory = 0)] [string] $configuration = 'release'
+	)
+
+	Assert (Test-Path $file) "$file could not be found"
+
+	$buildVerbosity = 'quiet'
+	if ($koshu.verbose -eq $true) {
+		$buildVerbosity = 'minimal'
+	}
+
+	if ($destination -eq $null -or $destination -eq '') {
+		exec {
+			msbuild $file `
+				/target:Rebuild `
+				/property:Configuration=$configuration `
+				/verbosity:$buildVerbosity
+		}
+	} else {
+		$type = [IO.Path]::GetExtension((Resolve-Path $file))
+		if ($type -eq ".csproj" -or $type -eq ".vbproj") {
+			$subDir = [IO.Path]::GetFileNameWithoutExtension((Resolve-Path $file))
+			$destination = "$destination\$subDir"
+		} else {
+			throw "Solution files are not supported with the -destination option"
+		}
+
+		create_directory $destination | Out-Null
+
+		exec {
+			msbuild $file `
+				/target:Publish `
+				/property:Configuration=$configuration `
+				/property:_PackageTempDir=$artifactDir `
+				/property:AutoParameterizationWebConfigConnectionStrings=False `
+				/verbosity:$buildVerbosity
+		}
+
+		if ((Get-ChildItem $destination | Measure-Object).Count -eq 0) {
+			$parentDir = Split-Path $file -parent
+			copy_files -source "$parentDir\bin\$configuration" -destination $destination
+		}
+	}
 }

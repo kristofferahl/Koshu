@@ -449,7 +449,7 @@ export-modulemember -function Invoke-Koshu, Koshu-Scaffold, Koshu-ScaffoldPlugin
 export-modulemember -function Packages, Config
 export-modulemember -function Install-NugetPackage, Install-GitPackage, Install-DirPackage
 export-modulemember -function create_directory, delete_directory, delete_files, copy_files, copy_files_flatten, find_down, find_up
-export-modulemember -function build_solution, pack_solution
+export-modulemember -function build
 export-modulemember -function nuget_exe, run, exec_retry
 export-modulemember -function invoke_ternary
 export-modulemember -alias ?:
