@@ -5,7 +5,7 @@ $koshuPluginsDir = "C:\Develop\Koshu.Plugins"
 
 Import-Module $koshuModule -DisableNameChecking -ArgumentList $packagesDir
 
-Describe "install_nuget_package" {
+Describe "Install-NugetPackage" {
 	Context "When installing Koshu.PluginTemplate" {
 		remove-item $TestDrive -recurse -force -erroraction silentlycontinue
 
