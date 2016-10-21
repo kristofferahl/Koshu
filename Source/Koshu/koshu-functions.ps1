@@ -19,7 +19,6 @@ function delete_files($source, $include=@("*"), $exclude=@()) {
 
 function copy_files($source, $destination, $include=@("*.*"), $exclude=@()) {
 	$copiedFiles = 0
-	Write-Host "Copying '$source' to '$destination'. Include '$include'. Exclude '$exclude'"
 	if (test-path $source) {
 		New-Item -ItemType Directory -Path $destination -Force | Out-Null
 
@@ -30,10 +29,7 @@ function copy_files($source, $destination, $include=@("*.*"), $exclude=@()) {
 			$itemPath = $_.FullName.Replace($fullSourcePath, $fullDestinationPath)
 
 			if ($koshu.verbose -eq $true) {
-				Write-Host 'Copying '
-				Write-Host "Source: $_"
-				Write-Host "Destination: $itemPath"
-				Write-Host ''
+				Write-Host "Copying '$_' to '$itemPath'"
 			}
 
 			if (!($_.PSIsContainer)) {
@@ -44,7 +40,7 @@ function copy_files($source, $destination, $include=@("*.*"), $exclude=@()) {
 			$copiedFiles++
 		}
 	}
-	Write-Host "Copied $copiedFiles $(if ($copiedFiles -eq 1) { "item" } else { "items" })."
+	Write-Host "Copied $copiedFiles $(if ($copiedFiles -eq 1) { "item" } else { "items" }) from '$source' to '$destination'."
 }
 
 function copy_files_flatten($source, $destination, $filter) {

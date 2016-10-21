@@ -9,7 +9,7 @@ The honey flavoured psake task automation tool
 
 Open up a command line and enter the following command:
 
-	powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.github.com/kristofferahl/Koshu/develop/install.ps1'))"
+	powershell -noprofile -executionpolicy unrestricted -command "iex ((new-object net.webclient).DownloadString('https://raw.github.com/kristofferahl/Koshu/master/install.ps1'))"
 
 This will create a file called koshu.ps1 in the current directory. This file enables you to invoke tasks as well as do scaffolding of task files and plugins.
 
@@ -27,11 +27,13 @@ Scaffolding a taskfile is as easy as calling Koshu-Scaffold passing a single par
 
 	Koshu-Scaffold -template <templateName>
 
+There are currently 2 templates to choose from. `build` and `empty`.
+
 ## Running Koshu
 
 ### Powershell
 
-	.\koshu [<target>] [<taskFile>]
+	.\koshu [<tasks>] [<taskFile>]
 
 #### Powershell examples
 
@@ -42,7 +44,7 @@ Scaffolding a taskfile is as easy as calling Koshu-Scaffold passing a single par
 
 ### Command line
 
-	powershell .\koshu [<target>] [<taskFile>]
+	powershell .\koshu [<tasks>] [<taskFile>]
 
 #### Command line examples
 
@@ -53,14 +55,14 @@ Scaffolding a taskfile is as easy as calling Koshu-Scaffold passing a single par
 
 ### Bash
 
-	powershell koshu [<target>] [<taskFile>]
+	powershell ./koshu [<tasks>] [<taskFile>]
 
 #### Bash examples
 
-	powershell koshu
-	powershell koshu compile
-	powershell koshu -taskfile build.ps1
-	powershell koshu compile build.ps1
+	powershell ./koshu
+	powershell ./koshu compile
+	powershell ./koshu -taskfile build.ps1
+	powershell ./koshu compile build.ps1
 
 ### Using koshu.cmd or <taskfile>.cmd
 

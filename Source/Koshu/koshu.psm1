@@ -3,7 +3,7 @@
 #------------------------------------------------------------
 
 $script:koshu		= [ordered]@{}
-$koshu.version		= '0.8.0'
+$koshu.version		= '0.9.0'
 $koshu.verbose		= $false
 $koshu.context		= new-object system.collections.stack # holds onto the current state of all variables
 $koshu.dir			= $MyInvocation.MyCommand.Definition.Replace($MyInvocation.MyCommand.Name, "") -replace ".$"
@@ -367,15 +367,18 @@ function Install-NugetPackage {
 
 	if ($version -ne '*') {
 		$output = find_and_execute "NuGet.exe" "install $name -version $version -outputdirectory $destinationDir"
-		write-host $output
 	} else {
 		$output = find_and_execute "NuGet.exe" "install $name -prerelease -outputdirectory $destinationDir"
-		write-host $output
-		if ($output -match "(.*)$name (?<version>(.*))\'(.*)") {
-			$version = $matches.version
-		} else {
-			throw "Failed to parse the nuget package version from the command output!"
+	}
+
+	if ($output -match "(.*)$name (?<version>(.*))\'(.*)" -or $output -match "(.*)""$name.(?<version>(.*))""(.*)") {
+		if ($koshu.verbose -eq $true) {
+			write-host $output
 		}
+		$version = $matches.version
+	} else {
+		write-host $output -fore red
+		throw "Failed to parse the nuget package version from the nuget command output!"
 	}
 
 	$installationDir = "$destinationDir\$name.$version"

@@ -1,7 +1,14 @@
-.\koshu.ps1 -load
-
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$testDir = "$here\Temp"
+$packagesDir = "$here\..\Packages"
+$koshuModule = "$here\..\Koshu\koshu.psm1"
+$koshuPluginsDir = "C:\Develop\Koshu.Plugins"
+
+if (-not (Test-Path $koshuPluginsDir)) {
+	Write-Host "Skipping tests in: $($MyInvocation.MyCommand.Path). Pre-requisites not fullfilled." -Fore Yellow
+	exit 0
+}
+
+Import-Module $koshuModule -DisableNameChecking -ArgumentList $packagesDir
 
 Describe "Koshu-InstallPackage" {
 	Context "When installing Koshu.PluginTemplate from nuget" {
@@ -9,7 +16,7 @@ Describe "Koshu-InstallPackage" {
 			"Param1"="Param1Value"
 			"Param2"="Param2Value"
 		}
-		$result = Koshu-InstallPackage -name 'Koshu.PluginTemplate' -version '0.1.1' -destinationDir $testDir -installParameters $installParams
+		$result = Koshu-InstallPackage -name 'Koshu.PluginTemplate' -version '0.1.1' -destinationDir $TestDrive -installParameters $installParams
 
 		It "installs the package" {
 			$result.directory | Should Exist
@@ -17,7 +24,7 @@ Describe "Koshu-InstallPackage" {
 
 		It "returns the installation dir" {
 			$result.directory.gettype() | Should Be 'string'
-			$result.directory | Should Be "$testDir\Koshu.PluginTemplate.0.1.1"
+			$result.directory | Should Be "$TestDrive\Koshu.PluginTemplate.0.1.1"
 		}
 
 		It "returns the installation dir name" {
@@ -32,7 +39,7 @@ Describe "Koshu-InstallPackage" {
 
 		It "returns the installation file path" {
 			$result.installFile.gettype() | Should Be 'string'
-			$result.installFile | Should Be "$testDir\Koshu.PluginTemplate.0.1.1\tools\install.ps1"
+			$result.installFile | Should Be "$TestDrive\Koshu.PluginTemplate.0.1.1\tools\install.ps1"
 		}
 
 		It "returns the installation parameters" {
@@ -51,7 +58,7 @@ Describe "Koshu-InstallPackage" {
 			"Param1"="Param1Value"
 			"Param2"="Param2Value"
 		}
-		$result = Koshu-InstallPackage -name 'Koshu.PluginTemplate' -version 'git+file:///C/Develop/Koshu.PluginTemplate' -destinationDir $testDir -installParameters $installParams
+		$result = Koshu-InstallPackage -name 'Koshu.PluginTemplate' -version 'git+file:///C/Develop/Koshu.Plugins/Koshu.PluginTemplate' -destinationDir $TestDrive -installParameters $installParams
 
 		It "installs the package" {
 			$result.directory | Should Exist
@@ -59,7 +66,7 @@ Describe "Koshu-InstallPackage" {
 
 		It "returns the installation dir" {
 			$result.directory.gettype() | Should Be 'string'
-			$result.directory | Should Be "$testDir\Koshu.PluginTemplate.git"
+			$result.directory | Should Be "$TestDrive\Koshu.PluginTemplate.git"
 		}
 
 		It "returns the installation dir name" {
@@ -74,7 +81,7 @@ Describe "Koshu-InstallPackage" {
 
 		It "returns the installation file path" {
 			$result.installFile.gettype() | Should Be 'string'
-			$result.installFile | Should Be "$testDir\Koshu.PluginTemplate.git\tools\install.ps1"
+			$result.installFile | Should Be "$TestDrive\Koshu.PluginTemplate.git\tools\install.ps1"
 		}
 
 		It "returns the installation parameters" {
@@ -93,7 +100,7 @@ Describe "Koshu-InstallPackage" {
 			"Param1"="Param1Value"
 			"Param2"="Param2Value"
 		}
-		$result = Koshu-InstallPackage -name 'Koshu.PluginTemplate' -version 'dir+C:\Develop' -destinationDir $testDir -installParameters $installParams
+		$result = Koshu-InstallPackage -name 'Koshu.PluginTemplate' -version "dir+$koshuPluginsDir" -destinationDir $TestDrive -installParameters $installParams
 
 		It "installs the package" {
 			$result.directory | Should Exist
@@ -101,7 +108,7 @@ Describe "Koshu-InstallPackage" {
 
 		It "returns the installation dir" {
 			$result.directory.gettype() | Should Be 'string'
-			$result.directory | Should Be "$testDir\Koshu.PluginTemplate.dir"
+			$result.directory | Should Be "$TestDrive\Koshu.PluginTemplate.dir"
 		}
 
 		It "returns the installation dir name" {
@@ -116,7 +123,7 @@ Describe "Koshu-InstallPackage" {
 
 		It "returns the installation file path" {
 			$result.installFile.gettype() | Should Be 'string'
-			$result.installFile | Should Be "$testDir\Koshu.PluginTemplate.dir\tools\install.ps1"
+			$result.installFile | Should Be "$TestDrive\Koshu.PluginTemplate.dir\tools\install.ps1"
 		}
 
 		It "returns the installation parameters" {

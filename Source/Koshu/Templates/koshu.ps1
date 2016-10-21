@@ -6,21 +6,24 @@ Param(
 	[Parameter(Position=4,Mandatory=0)] [switch]$load
 )
 
-# Ensure errors stops execution
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Stop'  # Ensure errors stops execution
+$koshuVersion = '#Version#'
+$koshuDir = "#PackagesPath#\Koshu.$koshuVersion"
 
-# Restore koshu nuget package
-$paths = (1..3) | % { '.' + ('\*' * $_) }
-$nuget = (Get-ChildItem -Path $paths -Filter NuGet.exe | Select-Object -First 1)
-if ($nuget) { $nuget = $nuget.FullName } else { $nuget = "NuGet.exe" }
-try {
-	& $nuget install Koshu -version #Version# -outputdirectory "#PackagesPath#"
-} catch [System.Management.Automation.CommandNotFoundException] {
-	throw 'Could not find NuGet.exe and it does not seem to be in your path! Aborting.'
+# Restore koshu nuget package unless present
+if (-not (Test-Path $koshuDir)) {
+	$paths = (1..3) | % { '.' + ('\*' * $_) }
+	$nuget = (Get-ChildItem -Path $paths -Filter NuGet.exe | Select-Object -First 1)
+	if ($nuget) { $nuget = $nuget.FullName } else { $nuget = "NuGet.exe" }
+	try {
+		& $nuget install Koshu -version $koshuVersion -outputdirectory "#PackagesPath#"
+	} catch [System.Management.Automation.CommandNotFoundException] {
+		throw 'Could not find NuGet.exe and it does not seem to be in your path. Aborting!'
+	}
 }
 
 # Initialize koshu
-#PackagesPath#\Koshu.#Version#\tools\init.ps1 -parameters @{ "load" = $load }
+& "$koshuDir\tools\init.ps1" -parameters @{ "load" = $load }
 
 if (-not $load) {
 	# Trigger koshu
