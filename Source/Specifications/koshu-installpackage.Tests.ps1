@@ -3,6 +3,11 @@ $packagesDir = "$here\..\Packages"
 $koshuModule = "$here\..\Koshu\koshu.psm1"
 $koshuPluginsDir = "C:\Develop\Koshu.Plugins"
 
+if (-not (Test-Path $koshuPluginsDir)) {
+	Write-Host "Skipping tests in: $($MyInvocation.MyCommand.Path). Pre-requisites not fullfilled." -Fore Yellow
+	exit 0
+}
+
 Import-Module $koshuModule -DisableNameChecking -ArgumentList $packagesDir
 
 Describe "Koshu-InstallPackage" {
