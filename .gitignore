@@ -1,4 +1,3 @@
-Build/Temp
-Build/Artifacts
+Build/
 Source/Packages
 Source/Koshu.*.nupkg

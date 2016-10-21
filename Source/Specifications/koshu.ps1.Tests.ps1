@@ -7,8 +7,8 @@ Describe "koshu.ps1" {
 
 	$source			= "$koshuDir\Templates\koshu.ps1"
 	$destination	= "$TestDrive\koshu.ps1"
-	$version		= get-content "$here\..\..\.version"
-	$packagesDir	= ".\Source\Packages"
+	$version		= $env:BUILD_KOSHU_VERSION
+	$packagesDir	= "$TestDrive\Source\Packages"
 
 	Context "when nuget.exe is found in subdirectory" {
 
@@ -28,12 +28,12 @@ Describe "koshu.ps1" {
 		$currentDir = Get-Location
 		Set-Location $TestDrive
 
-		.$destination -load
+		. $destination -load
 
 		Set-Location $currentDir
 
 		It "restores koshu and psake nuget packages" {
-			"$TestDrive\Source\Packages\Koshu.$version" | Should Exist
+			"$packagesDir\Koshu.$version" | Should Exist
 		}
 
     }
@@ -50,12 +50,12 @@ Describe "koshu.ps1" {
 		$currentDir = Get-Location
 		Set-Location $TestDrive
 
-		.$destination -load
+		. $destination -load
 
 		Set-Location $currentDir
 
 		It "restores koshu and psake nuget packages" {
-			"$TestDrive\Source\Packages\Koshu.$version" | Should Exist
+			"$packagesDir\Koshu.$version" | Should Exist
 		}
 
     }

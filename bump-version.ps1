@@ -21,7 +21,7 @@ write-host "Updated nuspec ($nuspecFile)" -fore cyan
 # ---------------------------------------------------
 # Update koshu.psm1
 # ---------------------------------------------------
-$koshu = ((get-content $koshuFile) | % { $_ -replace "'$currentVersion'","'$version'" } | out-string).trimend([Environment]::NewLine)
+$koshu = ((get-content $koshuFile) | % { $_ -replace "'$currentVersion'","'$version'" } | out-string)
 new-item -itemtype file -value $koshu -path $koshuFile -force | out-null
 write-host "Updated koshu.psm1 ($koshuFile)" -fore cyan
 # ---------------------------------------------------
@@ -29,7 +29,7 @@ write-host "Updated koshu.psm1 ($koshuFile)" -fore cyan
 # ---------------------------------------------------
 # Update install.ps1 in the root directory
 # ---------------------------------------------------
-$install = ((get-content $installFile) | % { $_ -replace "'$currentVersion'","'$version'" } | out-string).trimend([Environment]::NewLine)
+$install = ((get-content $installFile) | % { $_ -replace "'$currentVersion'","'$version'" } | out-string)
 new-item -itemtype file -value $install -path $installFile -force | out-null
 write-host "Updated install.ps1 ($installFile)" -fore cyan
 # ---------------------------------------------------
