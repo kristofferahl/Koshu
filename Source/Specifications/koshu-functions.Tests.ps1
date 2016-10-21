@@ -404,7 +404,7 @@ Describe "nuget_exe" {
 		create_directory $rootDir
 
 		It "installs latest version of koshu" {
-			nuget_exe install koshu -Version $koshuVersion -OutputDirectory $rootDir -ConfigFile (nuget_configfile)
+			nuget_exe install koshu -Version $koshuVersion -OutputDirectory $rootDir
 
 			"$rootDir\koshu.$($koshuVersion)" | Should Exist
 		}

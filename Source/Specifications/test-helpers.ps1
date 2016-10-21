@@ -13,7 +13,3 @@ function assert_path_equals($path1, $path2) {
 
 	"$relPath1" | Should Be "$relPath2"
 }
-
-function nuget_configfile() {
-	return (resolve-path '.\.nuget\NuGet.Config')
-}
